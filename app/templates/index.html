@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>계약미러 Contract Mirror</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=20260601-ui-v5" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">CM</div>
+        <div>
+          <p class="eyebrow" id="modeEyebrow">Contract Mirror</p>
+          <h1>계약미러</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span id="phasePill" class="phase-pill" hidden>계약서 확인</span>
+        <a id="judgeLink" class="ghost-link" href="/judge" title="심사위원 기술 검증 모드">심사위원 모드</a>
+        <button id="trustToggleTop" class="ghost-button judge-only" type="button" aria-expanded="false" hidden>신뢰 로그 보기</button>
+      </div>
+    </header>
+
+    <main class="workspace trust-closed" id="workspace">
+      <section class="main-stage">
+        <div class="progress-summary" id="progressSummary" aria-label="전체 진행 요약" hidden>
+          <div class="summary-step active" data-phase="contract">
+            <span>1</span><strong>계약서 확인</strong>
+          </div>
+          <div class="summary-step" data-phase="consent">
+            <span>2</span><strong>본인확인·동의</strong>
+          </div>
+          <div class="summary-step" data-phase="result">
+            <span>3</span><strong>결과 확인</strong>
+          </div>
+        </div>
+
+        <div class="phone-frame">
+          <div class="phone-status-bar">
+            <span id="deviceLabel">계약미러</span>
+            <span id="userStatusMini">시작</span>
+          </div>
+          <div id="screen" class="phone-screen"></div>
+        </div>
+      </section>
+
+      <aside id="trustPanel" class="trust-panel" aria-label="심사위원용 신뢰 로그" hidden>
+        <div class="trust-header">
+          <div>
+            <p class="eyebrow dark">Judge View</p>
+            <h2>Trust Log</h2>
+          </div>
+          <button id="trustClose" class="icon-button" type="button" aria-label="신뢰 로그 닫기">×</button>
+        </div>
+        <div class="trust-explain">
+          실제 사용자에게는 보이지 않는 심사위원용 내부 상태입니다. 공식 연동 전 항목은 mock/simulated로 정직하게 표시합니다.
+        </div>
+        <div id="trustLog" class="log-lines"></div>
+      </aside>
+    </main>
+
+    <button id="controlToggle" class="control-toggle judge-only" type="button" hidden>시연 제어 열기</button>
+    <aside id="controlPanel" class="control-panel" hidden>
+      <div class="control-head">
+        <div>
+          <p class="eyebrow">Presenter</p>
+          <h2>시연 제어</h2>
+        </div>
+        <button id="controlClose" class="icon-button light" type="button" aria-label="시연 제어 닫기">×</button>
+      </div>
+      <div class="control-section">
+        <strong>기기 화면 전환</strong>
+        <div class="control-grid">
+          <button data-control="view-host">계약 설명방</button>
+          <button data-control="view-contractor">계약자 화면</button>
+          <button data-control="view-explainer">설명자 화면</button>
+        </div>
+      </div>
+      <div class="control-section">
+        <strong>시연 상태 변경</strong>
+        <div class="control-grid">
+          <button data-control="complete-contractor-id">계약자 본인확인 처리</button>
+          <button data-control="complete-explainer-id">설명자 본인확인 처리</button>
+          <button data-control="complete-contractor-consent">계약자 동의 처리</button>
+          <button data-control="complete-explainer-consent">설명자 동의 처리</button>
+          <button data-control="reject-explainer">설명자 동의 거부 처리</button>
+          <button data-control="processing-done">AI 분석 완료 처리</button>
+          <button data-control="reset-all">전체 상태 초기화</button>
+        </div>
+      </div>
+      <p class="control-note">이 패널은 발표자 조작용입니다. 일반 사용자 화면에는 표시되지 않습니다.</p>
+    </aside>
+  </div>
+
+  <script>
+    window.CONTRACT_MIRROR_BOOT = {
+      initialDevice: "{{ initial_device | default('host') }}",
+      initialStep: "{{ initial_step | default('start') }}",
+      initialMode: "{{ initial_mode | default('user') }}"
+    };
+  </script>
+  <script src="/static/js/app.js?v=20260601-ui-v5"></script>
+</body>
+</html>

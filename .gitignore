@@ -1,0 +1,15 @@
+_backups/
+__pycache__/
+
+# local backups
+_backups/
+app_backup_before_ui_fix/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# mac
+.DS_Store
