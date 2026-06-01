@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>계약미러 Contract Mirror</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=20260601-ui-v5" />
+  <link rel="stylesheet" href="/static/css/style.css?v=20260601-v6-1-responsive-foundation-polish" />
 </head>
 <body>
   <div class="app-shell">
@@ -25,6 +25,10 @@
 
     <main class="workspace trust-closed" id="workspace">
       <section class="main-stage">
+        <div class="mobile-demo-label user-only" aria-label="모바일 현장 플로우 안내">
+          <strong>모바일 현장 플로우</strong>
+          <span>계약자와 설명자가 각자의 스마트폰에서 보는 화면입니다.</span>
+        </div>
         <div class="progress-summary" id="progressSummary" aria-label="전체 진행 요약" hidden>
           <div class="summary-step active" data-phase="contract">
             <span>1</span><strong>계약서 확인</strong>
@@ -55,9 +59,13 @@
           <button id="trustClose" class="icon-button" type="button" aria-label="신뢰 로그 닫기">×</button>
         </div>
         <div class="trust-explain">
-          실제 사용자에게는 보이지 않는 심사위원용 내부 상태입니다. 공식 연동 전 항목은 mock/simulated로 정직하게 표시합니다.
+          실제 사용자에게는 보이지 않는 심사위원용 내부 상태입니다. 공식 연동 전 항목은 PoC 시뮬레이션으로 정직하게 표시합니다.
         </div>
-        <div id="trustLog" class="log-lines"></div>
+        <section id="trustSummary" class="trust-summary" aria-label="검증 상태 요약"></section>
+        <details class="raw-log-box" open>
+          <summary>Raw Trust Log</summary>
+          <div id="trustLog" class="log-lines"></div>
+        </details>
       </aside>
     </main>
 
@@ -73,7 +81,7 @@
       <div class="control-section">
         <strong>기기 화면 전환</strong>
         <div class="control-grid">
-          <button data-control="view-host">계약 설명방</button>
+          <button data-control="view-host">계약 설명 세션</button>
           <button data-control="view-contractor">계약자 화면</button>
           <button data-control="view-explainer">설명자 화면</button>
         </div>
@@ -101,6 +109,6 @@
       initialMode: "{{ initial_mode | default('user') }}"
     };
   </script>
-  <script src="/static/js/app.js?v=20260601-ui-v5"></script>
+  <script src="/static/js/app.js?v=20260601-v6-1-responsive-foundation-polish"></script>
 </body>
 </html>
