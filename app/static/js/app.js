@@ -60,12 +60,12 @@ const state = {
   trustOpen: false,
   contractRecordOpen: false,
   events: [
-    ["UI_VERSION", "contract_mirror_ui_v6_2_final_polish"],
+    ["UI_VERSION", "contract_mirror_ui_v6_5_step4_verify_workspace"],
     ["FLOW", "contract_locked_before_recording"]
   ]
 };
 
-const STORAGE_KEY = "contractMirrorV6_2FinalPolishState";
+const STORAGE_KEY = "contractMirrorV6_5Step4State";
 
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -178,6 +178,15 @@ function render() {
   renderShell();
   renderScreen();
   renderTrustLog();
+  keepMobileScreenAtTop();
+}
+
+function keepMobileScreenAtTop() {
+  requestAnimationFrame(() => {
+    const phoneScreen = document.querySelector(".phone-screen");
+    if (phoneScreen) phoneScreen.scrollTop = 0;
+    if (!isJudge()) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  });
 }
 
 function renderShell() {
@@ -241,6 +250,10 @@ function renderShell() {
     $("#progressSummary").hidden = true;
     $("#phasePill").hidden = true;
   } else {
+    // v6.4: 사용자 제출/데모 화면에서는 폰 바깥 단계바를 숨긴다.
+    // 진행 상태는 실제 모바일 화면 내부의 헤더와 CTA로만 전달한다.
+    $("#progressSummary").hidden = true;
+    $("#phasePill").hidden = true;
     $("#trustToggleTop").hidden = true;
     $("#controlToggle").hidden = true;
     closeTrust();
@@ -485,7 +498,7 @@ function renderScreen() {
 
 function startScreen() {
   return wrap(`
-    <div class="screen-kicker">계약 현장용 모바일 검증 플로우</div>
+    <div class="screen-kicker">모바일 현장 플로우</div>
     <h2 class="screen-title trust-title">말로 들은 설명과 서명할 조항이 다를 때,<br>계약미러가 계약 전에 잡아냅니다.</h2>
     <p class="screen-desc">계약미러는 계약 현장의 설명, 동의, 녹취를 하나의 검증 세션으로 묶고, AI가 계약서 조항과 다른 설명을 찾아냅니다.</p>
     <div class="risk-scenario-card" aria-label="위험 상황 예시">
@@ -617,26 +630,53 @@ function statusCard(title, role, person) {
   `;
 }
 
+function waitingCommandCard(kind, title, person, description) {
+  const complete = person.verified && person.consent && !person.rejected;
+  const rejected = person.rejected;
+  const stateText = rejected ? "동의 거부" : complete ? "완료" : "대기 중";
+  const stateClass = rejected ? "fail" : complete ? "done" : "wait";
+  return `
+    <section class="waiting-command-card ${stateClass}">
+      <div class="waiting-command-head">
+        <div>
+          <span class="waiting-role-label">${kind}</span>
+          <h3>${title}</h3>
+        </div>
+        <span class="waiting-status-token ${stateClass}">${stateText}</span>
+      </div>
+      <p>${description}</p>
+      <div class="waiting-signal ${stateClass}" aria-hidden="true">
+        ${complete ? "✓" : rejected ? "!" : `<span class="spinner"></span>`}
+      </div>
+      <div class="waiting-check-grid">
+        <div><span>본인확인</span>${statusText(person.verified, rejected)}</div>
+        <div><span>녹취 동의</span>${statusText(person.consent, rejected)}</div>
+        <div><span>AI 분석 동의</span>${statusText(person.consent, rejected)}</div>
+      </div>
+    </section>
+  `;
+}
+
 function waitingRoomScreen() {
   const ready = readyToRecord();
   const rejected = hasRejection();
   return wrap(`
-    <div class="screen-kicker">참여자 동의 상태</div>
-    <h2 class="screen-title compact">양쪽의 본인확인과 녹취 동의를 기다리고 있습니다.</h2>
-    <p class="screen-desc">시스템은 정상적으로 연결되어 있으며, 상대방 완료 상태가 이 화면에 표시됩니다.</p>
-    <div class="waiting-state-panel">
-      <div class="waiting-pulse" aria-hidden="true"></div>
-      <div><strong>${ready ? "녹취 시작 준비 완료" : "상대방 응답 대기 중"}</strong><p>${ready ? "양측 동의가 완료되었습니다. 녹취를 시작할 수 있습니다." : "초대번호가 유효하며 세션이 열려 있습니다."}</p></div>
+    <div class="screen-kicker">참여자 준비 상태</div>
+    <h2 class="screen-title compact">양측 준비 상태 확인</h2>
+    <p class="screen-desc">시스템이 계약자와 설명자의 본인확인, 녹취 동의, AI 분석 동의 상태를 확인하고 있습니다.</p>
+    <div class="waiting-control-tower">
+      ${waitingCommandCard("계약자", "박주원", state.contractor, state.contractor.consent ? "본인확인과 녹취 동의가 완료되었습니다." : "계약 설명을 듣는 사람의 본인확인과 동의를 확인합니다.")}
+      ${waitingCommandCard("설명자", "대기 중", state.explainer, state.explainer.consent ? "본인확인과 녹취 동의가 완료되었습니다." : "상대방의 접속 및 녹취 동의를 기다리고 있습니다.")}
     </div>
-    <div class="info-card">
+    <div class="waiting-state-panel refined">
+      <div class="waiting-pulse" aria-hidden="true"></div>
+      <div><strong>${ready ? "녹취 시작 준비 완료" : "세션 연결 정상"}</strong><p>${ready ? "양측 동의가 완료되었습니다. 녹취를 시작할 수 있습니다." : "초대번호가 유효하며 시스템이 상대방의 응답을 기다리고 있습니다."}</p></div>
+    </div>
+    <div class="info-card session-brief">
       <h3>계약 설명 세션</h3>
       <div class="mini-row"><span>세션 ID</span><span>${state.sessionId}</span></div>
       <div class="mini-row"><span>기준 계약서</span><span>${state.contractFile}</span></div>
       <div class="mini-row"><span>계약서 상태</span><span>원본 해시 생성 완료</span></div>
-    </div>
-    <div class="status-card-grid">
-      ${statusCard("계약 설명을 듣는 사람", "contractor", state.contractor)}
-      ${statusCard("계약 내용을 설명하는 사람", "explainer", state.explainer)}
     </div>
     ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
     ${rejected ? `<div class="bottom-actions"><button class="danger-action" data-action="go-failure">거부 상태 확인하기</button></div>` : `
@@ -809,8 +849,8 @@ function reportScreen() {
             <p>녹취 발언과 계약서 조항을 나란히 비교해, 어떤 부분이 충돌하는지 확인하세요.</p>
           </div>
           <div class="evidence-score">
-            <strong>3</strong>
-            <span>건 탐지</span>
+            <strong>3건</strong>
+            <span>불일치 후보</span>
           </div>
         </div>
         <div class="mismatch-list">${cards}</div>
@@ -824,11 +864,15 @@ function reportScreen() {
           <div class="audit-row"><span>최고 위험도</span><strong class="danger-text">높음</strong></div>
           <div class="audit-row"><span>분석 리포트 해시</span><strong>생성 완료</strong></div>
           <div class="audit-row"><span>검증 카드</span><strong>생성 준비 완료</strong></div>
-          <p class="audit-note">계약미러는 법률 판단을 대신하지 않습니다. 서명 전 확인해야 할 설명·조항 불일치 후보를 먼저 제시합니다.</p>
+          <p class="audit-note">상세 검증 리포트에서 녹취 발언과 계약서 조항을 나란히 비교하세요. 계약미러는 법률 판단을 대신하지 않고, 서명 전 확인해야 할 설명·조항 불일치 후보를 먼저 제시합니다.</p>
+          <div class="report-next-actions">
+            <span>다음 조치</span>
+            <strong>이 분석 결과를 검증 가능한 카드로 생성할 수 있습니다.</strong>
+          </div>
           <div class="bottom-actions evidence-actions result-actions-v6">
-            <button class="big-action" data-action="go-verify">검증 카드 생성하기</button>
-            <button class="secondary-action" data-action="save-report">검증 리포트 저장하기</button>
-            <button class="secondary-action" data-action="request-reexplain">재설명 요청하기</button>
+            <button class="big-action primary-result-action" data-action="go-verify">검증 카드 생성하기</button>
+            <button class="secondary-action secondary-result-action" data-action="save-report">검증 리포트 저장하기</button>
+            <button class="text-action tertiary-result-action" data-action="request-reexplain">재설명 요청하기</button>
             ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
           </div>
         </div>
@@ -839,51 +883,77 @@ function reportScreen() {
 
 function verifyScreen() {
   return wrap(`
-    <div class="verify-audit-layout trust-seal-verify">
+    <div class="verify-audit-layout trust-seal-verify verify-workspace-v65">
       <section class="verify-audit-main">
-        <div class="screen-kicker">검증 카드 생성 완료</div>
-        <div class="verify-card-hero trust-seal-hero">
+        <div class="screen-kicker">계약 설명 검증 카드</div>
+        <div class="verify-card-hero trust-seal-hero verify-hero-v65">
           <div>
             <span class="risk-badge verified">기록 무결성 정상</span>
             <h2>계약 설명 검증 카드 생성 완료</h2>
-            <p>계약서 원본, 설명 녹취, AI 분석 리포트, 양측 동의 기록이 하나의 검증 카드로 묶였습니다.</p>
+            <p>계약서 원본, 설명 녹취, AI 분석 리포트, 양측 동의 기록이 하나의 검증 세션으로 묶였습니다.</p>
+          </div>
+          <div class="verify-hero-stamp" aria-label="검증 상태">
+            <strong>VALID</strong>
+            <span>세션 연결 완료</span>
           </div>
         </div>
-        <section class="verify-status-card audit-strong trust-seal-card">
+
+        <section class="verify-meaning-card">
+          <div>
+            <strong>이 화면의 의미</strong>
+            <p>계약 내용에서는 위험 후보가 발견되었지만, 계약서·녹취·분석 리포트가 같은 세션에 연결된 기록이라는 점은 정상적으로 확인되었습니다.</p>
+          </div>
+        </section>
+
+        <section class="verify-status-card audit-strong trust-seal-card evidence-package-table">
           <h3>계약 설명 세션 증거 패키지</h3>
           <div class="verify-row"><span>계약 ID</span><strong>${state.sessionId}</strong></div>
           <div class="verify-row"><span>계약자 본인확인</span><strong>완료</strong></div>
           <div class="verify-row"><span>설명자 본인확인</span><strong>완료</strong></div>
-          <div class="verify-row"><span>계약 내용 위험 탐지</span><strong class="danger-text">높음 1건 / 중간 2건</strong></div>
-          <div class="verify-row"><span>계약서 해시</span><strong>생성 완료</strong></div>
+          <div class="verify-row danger-row"><span>계약 내용 위험 탐지</span><strong class="danger-text">높음 1건 / 중간 2건</strong></div>
+          <div class="verify-row"><span>계약서 원본 해시</span><strong>생성 완료</strong></div>
           <div class="verify-row"><span>녹취 해시</span><strong>생성 완료</strong></div>
-          <div class="verify-row"><span>리포트 해시</span><strong>생성 완료</strong></div>
+          <div class="verify-row"><span>분석 리포트 해시</span><strong>생성 완료</strong></div>
           <div class="verify-row"><span>기록 무결성</span><strong>정상</strong></div>
           <div class="verify-row"><span>QR 검증</span><strong>가능</strong></div>
           <div class="verify-row"><span>검증 데이터 구조</span><strong>구성 완료</strong></div>
         </section>
-        <section class="verify-status-card hash-view judge-only-inline">
-          <h3>기술 검증 정보</h3>
+
+        <details class="verify-status-card hash-view technical-details-v65">
+          <summary>기술 검증 정보 보기</summary>
           <div class="hash-line"><span>contract_hash</span><code>${state.contractHash}</code></div>
           <div class="hash-line"><span>recording_hash</span><code>${state.recordingHash}</code></div>
           <div class="hash-line"><span>report_hash</span><code>${state.reportHash}</code></div>
           <div class="hash-line"><span>Demo Tx Hash</span><code>0x7a91...c4e2 · data structure validated</code></div>
-        </section>
-        <div class="safe-notice">이 QR은 계약서·녹취·AI 분석 리포트가 같은 세션에 연결되어 있음을 확인하기 위한 검증 카드입니다.</div>
+        </details>
+
+        <div class="safe-notice verify-note-v65">이 검증 카드는 계약서·녹취·AI 분석 리포트가 같은 세션에 연결되어 있음을 확인하기 위한 사후 검증용 기록입니다.</div>
       </section>
-      <aside class="verify-qr-column">
+
+      <aside class="verify-qr-column verify-side-v65">
+        <div class="qr-side-head">
+          <span>사후 검증용 QR</span>
+          <strong>CM-20260601-001</strong>
+        </div>
         <div class="qr-large real-qr" aria-label="사후 검증용 QR 코드"><span>CM</span></div>
-        <div class="qr-small-label">사후 검증용 QR</div>
         <div class="qr-url">contract-mirror.kr/verify/CM-20260601-001</div>
         <div class="qr-caption">검증 카드 확인하기</div>
-        <div class="bottom-actions evidence-actions">
-          ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
+        <div class="verify-side-divider"></div>
+        <div class="mini-verify-summary">
+          <div><span>기록 무결성</span><strong>정상</strong></div>
+          <div><span>계약 내용 위험</span><strong class="danger-text">높음 1건</strong></div>
+          <div><span>리포트 해시</span><strong>생성 완료</strong></div>
+        </div>
+        <div class="bottom-actions evidence-actions verify-actions-v65">
+          <button class="big-action primary-result-action" data-action="go-report">AI 리포트 보기</button>
           <button class="secondary-action" data-action="go-start">처음으로</button>
+          ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
         </div>
       </aside>
     </div>
   `);
 }
+
 
 function failureScreen() {
   return wrap(`

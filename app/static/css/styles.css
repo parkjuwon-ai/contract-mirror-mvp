@@ -2812,8 +2812,285 @@ body.judge-mode .judge-raw-log * { overflow-wrap: anywhere; }
   .sticky-card { position: static; }
 }
 
-/* v6.1 polish mirror import: keep legacy styles.css aligned with style.css. */
-@import url('/static/css/style.css?v=20260601-v6-1-responsive-foundation-polish');
+/* =========================================================
+   v6.1 Responsive Foundation Polish
+   - 사용자 화면은 PC에서 '스마트폰 미러링 데모'처럼 보이게 고정
+   - 사후 리포트/검증 화면은 넓은 웹 리포트처럼 유지
+   - 제품 화면의 sample/mock 냄새 제거 및 스크롤바 마감
+   ========================================================= */
+
+:root {
+  --v6-phone-w-polish: 414px;
+  --v6-phone-h-polish: 812px;
+  --v6-audit-max: 1220px;
+}
+
+body.user-mode:not(.evidence-screen) .main-stage {
+  display: grid !important;
+  justify-items: center !important;
+  align-content: start !important;
+  gap: 16px !important;
+}
+
+body.user-mode.home-screen .workspace,
+body.user-mode:not(.evidence-screen) .workspace.trust-closed {
+  width: min(1080px, calc(100vw - 48px));
+}
+
+body.user-mode.home-screen .mobile-demo-label,
+body.user-mode:not(.evidence-screen) .mobile-demo-label {
+  display: flex !important;
+  width: min(var(--v6-phone-w-polish), calc(100vw - 32px));
+  min-height: 52px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(23, 54, 93, 0.10);
+  box-shadow: 0 10px 24px rgba(20,40,60,0.05);
+  color: var(--v6-muted, #5f6f81);
+  font-size: 12px;
+}
+
+body.user-mode.home-screen .mobile-demo-label strong,
+body.user-mode:not(.evidence-screen) .mobile-demo-label strong {
+  color: var(--primary, #16324f);
+  font-weight: 950;
+}
+
+body.user-mode.home-screen .mobile-demo-label span,
+body.user-mode:not(.evidence-screen) .mobile-demo-label span {
+  max-width: 210px;
+  text-align: right;
+  line-height: 1.35;
+}
+
+body.user-mode:not(.evidence-screen) .phone-frame {
+  position: relative !important;
+  width: min(var(--v6-phone-w-polish), calc(100vw - 32px)) !important;
+  min-height: min(var(--v6-phone-h-polish), calc(100vh - 144px)) !important;
+  max-height: min(820px, calc(100vh - 144px)) !important;
+  padding: 14px !important;
+  border-radius: 46px !important;
+  background: linear-gradient(180deg, #0e253e 0%, #071727 100%) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow: 0 24px 70px rgba(15,38,63,0.22), 0 4px 16px rgba(15,38,63,0.10) !important;
+  overflow: hidden !important;
+}
+
+body.user-mode:not(.evidence-screen) .phone-frame::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 13px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 92px !important;
+  height: 22px !important;
+  border-radius: 999px !important;
+  background: #071421 !important;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.08) !important;
+  z-index: 4 !important;
+  display: block !important;
+}
+
+body.user-mode:not(.evidence-screen) .phone-status-bar {
+  display: flex !important;
+  height: 50px !important;
+  padding: 13px 12px 0 !important;
+  color: #dbeafe !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body.user-mode:not(.evidence-screen) .phone-screen {
+  min-height: calc(min(var(--v6-phone-h-polish), calc(100vh - 144px)) - 76px) !important;
+  max-height: calc(min(820px, calc(100vh - 144px)) - 76px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  border-radius: 34px !important;
+  background: var(--surface-2, #fbfaf6) !important;
+  padding: 22px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+body.user-mode:not(.evidence-screen) .phone-screen::-webkit-scrollbar {
+  display: none !important;
+}
+
+body.user-mode:not(.evidence-screen) .screen-card {
+  min-height: calc(min(var(--v6-phone-h-polish), calc(100vh - 144px)) - 120px) !important;
+}
+
+body.user-mode.home-screen .screen-title.trust-title {
+  font-size: clamp(25px, 7.1vw, 31px);
+  line-height: 1.14;
+  letter-spacing: -0.07em;
+}
+
+body.user-mode.home-screen .screen-desc {
+  font-size: 15px;
+  line-height: 1.58;
+}
+
+body.user-mode.home-screen .risk-scenario-card {
+  border-color: rgba(143,63,57,0.15);
+  background: #fffaf8;
+}
+
+body.user-mode.home-screen .home-flow-guide.compact {
+  gap: 8px;
+}
+
+body.user-mode.home-screen .flow-guide-item {
+  padding: 10px 12px;
+}
+
+body.user-mode.home-screen .flow-guide-item em {
+  font-size: 12px;
+}
+
+/* 사후 리포트/검증은 폰 프레임에서 분리된 웹 리포트로 넓게 보여준다. */
+body.user-mode.evidence-screen .main-stage {
+  display: block !important;
+  width: 100%;
+}
+
+body.user-mode.evidence-screen .phone-frame {
+  width: 100% !important;
+  max-width: min(var(--v6-audit-max), calc(100vw - 48px)) !important;
+  min-height: auto !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+body.user-mode.evidence-screen .phone-frame::before,
+body.user-mode.evidence-screen .phone-status-bar {
+  display: none !important;
+}
+
+body.user-mode.evidence-screen .phone-screen {
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+body.user-mode.evidence-screen .screen-card {
+  min-height: auto !important;
+}
+
+/* 결과 화면 CTA는 진짜 다음 행동처럼 보이게. */
+.result-actions-v6 {
+  border-radius: 24px;
+  background: rgba(255,255,255,0.94);
+  border: 1px solid rgba(23,54,93,0.09);
+  box-shadow: 0 12px 28px rgba(20,40,60,0.06);
+}
+
+.result-actions-v6::before {
+  content: "다음 조치";
+  display: block;
+  margin: 2px 0 8px;
+  color: var(--primary, #16324f);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: .02em;
+}
+
+.result-actions-v6 .big-action {
+  min-height: 56px;
+}
+
+.result-actions-v6 .secondary-action {
+  min-height: 50px;
+}
+
+/* 제품 화면에서 너무 데모처럼 보이는 텍스트/기술 정보는 숨기고, judge에서만 노출. */
+body.user-mode .judge-only,
+body.user-mode .judge-only-inline,
+body.user-mode .poc-note,
+body.user-mode .judge-poc-note,
+body.user-mode .raw-log-box,
+body.user-mode .trust-panel {
+  display: none !important;
+}
+
+/* 검증 카드: 증거 패키지 느낌 강화 */
+.verify-card-hero.trust-seal-hero,
+.verify-status-card.audit-strong,
+.audit-card.sticky-card {
+  box-shadow: 0 16px 34px rgba(20,40,60,0.08);
+}
+
+.verify-row strong,
+.audit-row strong {
+  text-align: right;
+  max-width: 60%;
+}
+
+.qr-large {
+  box-shadow: 0 16px 34px rgba(20,40,60,0.10);
+}
+
+/* Judge는 대시보드 모드 고정. 사용자 폰 프레임 CSS가 침범하지 않게 방지. */
+body.judge-mode .mobile-demo-label { display: none !important; }
+body.judge-mode .phone-frame,
+body.judge-mode .phone-screen,
+body.judge-mode .screen-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.judge-mode .phone-frame {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.judge-mode .phone-frame::before,
+body.judge-mode .phone-status-bar { display: none !important; }
+body.judge-mode .phone-screen { padding: 0 !important; background: transparent !important; border-radius: 0 !important; }
+
+@media (max-width: 767px) {
+  body.user-mode:not(.evidence-screen) .mobile-demo-label { display: none !important; }
+  body.user-mode:not(.evidence-screen) .phone-frame {
+    width: 100% !important;
+    min-height: calc(100vh - 94px) !important;
+    max-height: none !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+  body.user-mode:not(.evidence-screen) .phone-frame::before,
+  body.user-mode:not(.evidence-screen) .phone-status-bar { display: none !important; }
+  body.user-mode:not(.evidence-screen) .phone-screen {
+    min-height: calc(100vh - 94px) !important;
+    max-height: none !important;
+    border-radius: 28px 28px 0 0 !important;
+    padding: 22px !important;
+    overflow-y: auto !important;
+  }
+  body.user-mode:not(.evidence-screen) .screen-card {
+    min-height: calc(100vh - 138px) !important;
+  }
+}
 
 
 /* =========================================
@@ -2935,5 +3212,906 @@ body.user-mode:not(.judge-mode) .processing-card strong {
 @media (max-width: 767px) {
   body.user-mode:not(.evidence-screen) .phone-screen {
     padding-top: 28px !important;
+  }
+}
+
+
+/* =========================================================
+   v6.3 Step 2 — Visual Discipline & Mobile Field Flow Polish
+   ========================================================= */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --primary: #16324f;
+  --primary-2: #0f263f;
+  --primary-soft: #e8eef6;
+  --trust: #0f766e;
+  --trust-soft: #e6f4f1;
+  --warning: #ea580c;
+  --warning-soft: #fff2e8;
+  --danger: #9f1239;
+  --danger-soft: #fce7ef;
+  --text: #1e293b;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.24);
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(15, 118, 110, 0.08), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(22, 50, 79, 0.08), transparent 32%),
+    var(--bg);
+}
+
+/* 사용자의 현장 플로우는 PC 데모에서도 명확한 스마트폰 목업으로 보이게 한다. */
+body.user-mode:not(.evidence-screen) .phone-frame,
+body.user-mode.home-screen .phone-frame {
+  width: min(430px, 100%);
+  min-height: 748px;
+  max-height: 810px;
+  padding: 12px;
+  border: 12px solid #334155;
+  border-radius: 44px;
+  background: #0f172a;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255,255,255,.35) inset;
+}
+body.user-mode:not(.evidence-screen) .phone-status-bar,
+body.user-mode.home-screen .phone-status-bar {
+  display: flex;
+  height: 42px;
+  padding: 0 16px;
+  color: #cbd5e1;
+}
+body.user-mode:not(.evidence-screen) .phone-screen,
+body.user-mode.home-screen .phone-screen {
+  min-height: 660px;
+  max-height: 716px;
+  overflow-y: auto;
+  border-radius: 30px;
+  padding: 28px;
+  background: #f8fafc;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body.user-mode:not(.evidence-screen) .phone-screen::-webkit-scrollbar,
+body.user-mode.home-screen .phone-screen::-webkit-scrollbar,
+.phone-screen::-webkit-scrollbar,
+.mobile-preview-screen::-webkit-scrollbar,
+.device-screen::-webkit-scrollbar {
+  display: none;
+}
+.phone-screen,
+.mobile-preview-screen,
+.device-screen {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 실제 모바일 접속에서는 외부 목업 테두리를 제거한다. */
+@media (max-width: 560px) {
+  .app-shell { padding: 0; }
+  .topbar { display: none; }
+  .workspace,
+  .workspace.trust-closed { display: block; max-width: none; }
+  .main-stage { min-height: 100vh; display: block; }
+  .mobile-demo-label { display: none !important; }
+  body.user-mode:not(.evidence-screen) .phone-frame,
+  body.user-mode.home-screen .phone-frame {
+    width: 100%;
+    min-height: 100vh;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #f8fafc;
+  }
+  body.user-mode:not(.evidence-screen) .phone-status-bar,
+  body.user-mode.home-screen .phone-status-bar { display: none; }
+  body.user-mode:not(.evidence-screen) .phone-screen,
+  body.user-mode.home-screen .phone-screen {
+    min-height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    padding: 28px 20px 32px;
+    overflow-y: auto;
+  }
+}
+
+/* 색상 디톡스: 원색 대신 공문서/감사 리포트 톤 */
+.risk-badge.high,
+.report-hero .risk {
+  background: var(--danger-soft) !important;
+  color: var(--danger) !important;
+  border: 1px solid rgba(159, 18, 57, .18);
+}
+.risk-badge.medium {
+  background: var(--warning-soft) !important;
+  color: #9a3412 !important;
+  border: 1px solid rgba(234, 88, 12, .18);
+}
+.risk-badge.verified,
+.status-chip.done,
+.summary-step.done span,
+.processing-card.done .num {
+  background: var(--trust) !important;
+  color: #fff !important;
+}
+.status-chip.done,
+.summary-step.done,
+.safe-notice {
+  background: var(--trust-soft) !important;
+  color: var(--trust) !important;
+}
+.status-chip.wait {
+  background: var(--warning-soft) !important;
+  color: #9a3412 !important;
+}
+.status-chip.fail,
+.danger-action {
+  background: var(--danger-soft) !important;
+  color: var(--danger) !important;
+}
+
+/* 여백은 정보의 방음벽이다. */
+.info-card,
+.participant-card,
+.report-card,
+.verification-card,
+.processing-card,
+.status-card,
+.consent-card,
+.upload-box,
+.risk-scenario-card,
+.home-flow-guide,
+.audit-side-card,
+.verify-status-card,
+.evidence-main-card {
+  padding: 26px !important;
+}
+.screen-title,
+.report-hero h2,
+.verify-card-hero h2 {
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+.screen-desc,
+.report-card blockquote,
+.quote-panel blockquote,
+.verify-row,
+.info-row,
+.mini-row {
+  font-weight: 400;
+}
+.big-action,
+.secondary-action,
+.danger-action {
+  min-height: 62px;
+  font-weight: 900;
+}
+
+/* 대기 화면: 세로 리스트 대신 관제탑형 상태 카드 */
+.waiting-control-tower {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 18px 0 16px;
+}
+.waiting-command-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 26px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .06);
+}
+.waiting-command-card.done {
+  border-color: rgba(15, 118, 110, .24);
+  background: linear-gradient(180deg, #ffffff 0%, #f1faf8 100%);
+}
+.waiting-command-card.wait {
+  border-color: rgba(234, 88, 12, .24);
+  background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+}
+.waiting-command-card.fail {
+  border-color: rgba(159, 18, 57, .24);
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+}
+.waiting-command-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.waiting-role-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.waiting-command-card h3 {
+  margin: 0;
+  color: var(--primary);
+  font-size: 22px;
+  line-height: 1.22;
+  letter-spacing: -.04em;
+}
+.waiting-command-card p {
+  margin: 0 74px 18px 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+  word-break: keep-all;
+}
+.waiting-status-token {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 900;
+}
+.waiting-status-token.done { background: var(--trust-soft); color: var(--trust); }
+.waiting-status-token.wait { background: var(--warning-soft); color: #9a3412; }
+.waiting-status-token.fail { background: var(--danger-soft); color: var(--danger); }
+.waiting-signal {
+  position: absolute;
+  right: 22px;
+  top: 76px;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  font-weight: 900;
+}
+.waiting-signal.done { background: var(--trust); color: #fff; }
+.waiting-signal.wait { background: rgba(234, 88, 12, .12); color: #9a3412; }
+.waiting-signal.fail { background: var(--danger); color: #fff; }
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(234, 88, 12, .22);
+  border-top-color: #ea580c;
+  animation: cmSpin .8s linear infinite;
+}
+@keyframes cmSpin { to { transform: rotate(360deg); } }
+.waiting-check-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.waiting-check-grid > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  min-height: 36px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(226, 232, 240, .8);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+.waiting-state-panel.refined {
+  background: #fff7ed;
+  border-color: rgba(234, 88, 12, .18);
+}
+.waiting-state-panel.refined p { color: #7c2d12; }
+.session-brief { margin-top: 12px; }
+
+/* Judge 화면에는 모바일 목업 스타일이 침범하지 않게 한다. */
+body.judge-mode .phone-frame {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+body.judge-mode .phone-status-bar { display: none !important; }
+body.judge-mode .phone-screen {
+  overflow: visible !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+/* ===== v6.4 Step 3 Responsive Report Polish =====
+   목적: 사용자 화면은 더 분명한 모바일 미러링 데모로, 결과 화면은 더 명확한 다음 행동 중심으로 정리한다. */
+:root {
+  --bg: #f8fafc;
+  --danger: #9f1239;
+  --danger-soft: #fff1f2;
+  --trust: #0f766e;
+  --trust-soft: #ecfdf5;
+  --warning: #ea580c;
+  --warning-soft: #fff7ed;
+}
+
+/* 사용자 화면의 폰 바깥 단계바는 시연/검증 콘솔의 역할이므로 숨긴다. */
+body.user-mode #progressSummary,
+body.user-mode #phasePill {
+  display: none !important;
+}
+
+/* 모바일 미러링 데모: 발표장에서 읽히도록 조금 더 크고 물리적인 디바이스처럼 보이게 한다. */
+body.user-mode:not(.judge-dashboard) .phone-frame {
+  width: min(535px, 100%);
+  min-height: 760px;
+  max-height: 835px;
+  border: 12px solid #334155;
+  border-radius: 46px;
+  padding: 12px;
+  background: #0f172a;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 30px 90px rgba(15, 23, 42, 0.18);
+}
+body.user-mode:not(.judge-dashboard) .phone-status-bar {
+  height: 46px;
+  padding: 0 18px;
+  color: #e2e8f0;
+}
+body.user-mode:not(.judge-dashboard) .phone-screen {
+  min-height: 670px;
+  max-height: 735px;
+  border-radius: 32px;
+  padding: 30px;
+  background: #fbfaf7;
+}
+body.user-mode:not(.judge-dashboard) .screen-card {
+  min-height: 610px;
+}
+body.user-mode:not(.judge-dashboard) .screen-title {
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+body.user-mode:not(.judge-dashboard) .screen-desc {
+  font-weight: 400;
+}
+
+/* 모바일 실제 접속에서는 폰 프레임을 제거하고 앱 화면처럼 보이게 한다. */
+@media (max-width: 560px) {
+  body.user-mode:not(.judge-dashboard) .mobile-demo-label { display: none; }
+  body.user-mode:not(.judge-dashboard) .phone-frame {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    width: 100%;
+    min-height: calc(100vh - 122px);
+    max-height: none;
+  }
+  body.user-mode:not(.judge-dashboard) .phone-status-bar { display: none; }
+  body.user-mode:not(.judge-dashboard) .phone-screen {
+    min-height: calc(100vh - 140px);
+    max-height: none;
+    border-radius: 28px;
+    padding: 22px;
+  }
+}
+
+/* 대기 화면: 관제탑 느낌을 더 키운다. */
+.waiting-control-tower {
+  gap: 16px;
+  margin: 16px 0 18px;
+}
+.waiting-command-card {
+  padding: 22px;
+  border-radius: 26px;
+  min-height: 190px;
+}
+.waiting-command-card h3 {
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+}
+.waiting-command-card p {
+  font-size: 15px;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.waiting-signal {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  font-size: 25px;
+}
+.waiting-signal .spinner {
+  width: 28px;
+  height: 28px;
+  border-width: 4px;
+  border-top-color: var(--warning);
+}
+.waiting-state-panel.refined {
+  padding: 18px;
+  border-radius: 22px;
+}
+.waiting-state-panel.refined strong {
+  font-size: 17px;
+}
+
+/* 결과 화면 Step 3: 다음 행동의 우선순위를 명확히 한다. */
+.report-next-actions {
+  margin: 18px 0 12px;
+  padding: 18px;
+  border-radius: 22px;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+.report-next-actions span {
+  display: block;
+  color: var(--trust);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.report-next-actions strong {
+  display: block;
+  color: var(--primary);
+  font-size: 16px;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+.result-actions-v6 {
+  gap: 11px;
+}
+.result-actions-v6 .primary-result-action {
+  min-height: 64px;
+  border-radius: 20px;
+  background: #16324f;
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(22, 50, 79, 0.24);
+}
+.result-actions-v6 .secondary-result-action {
+  min-height: 54px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(22, 50, 79, 0.16);
+}
+.text-action,
+.result-actions-v6 .tertiary-result-action {
+  width: 100%;
+  min-height: 46px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-weight: 850;
+  padding: 8px 12px;
+}
+.text-action:hover,
+.result-actions-v6 .tertiary-result-action:hover {
+  color: var(--primary);
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: 14px;
+}
+
+/* PC 결과 리포트는 사후 검토 화면처럼 넓고 안정적으로. */
+@media (min-width: 900px) {
+  body.evidence-screen.user-mode .workspace,
+  body.evidence-screen.user-mode .workspace.trust-closed {
+    max-width: 1280px;
+  }
+  body.evidence-screen.user-mode .phone-frame {
+    width: min(1180px, 100%);
+    max-height: none;
+  }
+  body.evidence-screen.user-mode .phone-screen {
+    max-height: none;
+    min-height: 680px;
+    overflow: visible;
+  }
+  body.evidence-screen.user-mode .screen-card {
+    min-height: auto;
+  }
+  body.evidence-screen.user-mode .desktop-evidence-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 24px;
+  }
+  body.evidence-screen.user-mode .verify-audit-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 24px;
+  }
+}
+
+/* 모바일 프레임 안 스크롤바는 계속 숨김. */
+.phone-screen,
+.mobile-preview-screen,
+.device-screen {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.phone-screen::-webkit-scrollbar,
+.mobile-preview-screen::-webkit-scrollbar,
+.device-screen::-webkit-scrollbar {
+  display: none;
+}
+
+/* 결과/검증 단계는 모바일 목업이 아니라 사후 검토 리포트로 보이게 한다. */
+body.evidence-screen.user-mode .mobile-demo-label { display: none; }
+body.evidence-screen.user-mode .phone-frame {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+body.evidence-screen.user-mode .phone-status-bar { display: none !important; }
+body.evidence-screen.user-mode .phone-screen {
+  border-radius: 30px;
+  background: transparent;
+  padding: 0;
+}
+
+/* =========================================================
+   v6.5 Step 4 — Verify Workspace Polish
+   - 사후 검증 화면을 독립 검증 카드/감사 리포트처럼 정리
+   - 기록 무결성 정상과 계약 내용 위험을 명확히 분리
+   - 기술 정보는 기본 접힘으로 제품 느낌 유지
+   ========================================================= */
+body.user-mode.verify-screen {
+  background: #f8fafc;
+}
+
+body.user-mode.verify-screen .verify-audit-layout.verify-workspace-v65 {
+  max-width: 1180px;
+  width: min(1180px, calc(100vw - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 26px;
+  align-items: start;
+}
+
+.verify-workspace-v65 .verify-card-hero.verify-hero-v65 {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 34px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.verify-workspace-v65 .verify-card-hero h2 {
+  margin: 12px 0 10px;
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  color: #17365d;
+  word-break: keep-all;
+}
+
+.verify-workspace-v65 .verify-card-hero p {
+  max-width: 680px;
+  margin: 0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.72;
+  word-break: keep-all;
+}
+
+.verify-hero-stamp {
+  flex: 0 0 auto;
+  width: 128px;
+  height: 128px;
+  border-radius: 999px;
+  border: 8px solid rgba(15, 118, 110, 0.16);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+}
+
+.verify-hero-stamp strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.verify-hero-stamp span {
+  display: block;
+  margin-top: -28px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.verify-meaning-card {
+  margin-top: 18px;
+  padding: 22px 24px;
+  border-radius: 24px;
+  background: #fff7ed;
+  border: 1px solid rgba(234, 88, 12, 0.18);
+}
+
+.verify-meaning-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #9a3412;
+}
+
+.verify-meaning-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #475569;
+  word-break: keep-all;
+}
+
+.evidence-package-table {
+  margin-top: 18px;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
+}
+
+.evidence-package-table h3 {
+  margin-bottom: 18px;
+  font-size: 22px;
+  letter-spacing: -0.035em;
+  color: #17365d;
+}
+
+.evidence-package-table .verify-row {
+  min-height: 54px;
+  padding: 15px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.evidence-package-table .verify-row:last-child {
+  border-bottom: none;
+}
+
+.evidence-package-table .verify-row span {
+  font-size: 14px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.evidence-package-table .verify-row strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  text-align: right;
+}
+
+.evidence-package-table .verify-row strong:not(.danger-text) {
+  color: #0f766e;
+}
+
+.evidence-package-table .verify-row:first-of-type strong {
+  color: #17365d;
+}
+
+.evidence-package-table .danger-row {
+  background: rgba(159, 18, 57, 0.035);
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 14px;
+}
+
+.technical-details-v65 {
+  margin-top: 18px;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.technical-details-v65 summary {
+  cursor: pointer;
+  padding: 18px 22px;
+  font-size: 15px;
+  font-weight: 900;
+  color: #17365d;
+  list-style: none;
+}
+
+.technical-details-v65 summary::-webkit-details-marker {
+  display: none;
+}
+
+.technical-details-v65[open] summary {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.technical-details-v65 .hash-line {
+  padding: 14px 22px;
+}
+
+.verify-note-v65 {
+  margin-top: 18px;
+  padding: 18px 20px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.verify-side-v65 {
+  position: sticky;
+  top: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  padding: 26px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+}
+
+.qr-side-head {
+  margin-bottom: 18px;
+}
+
+.qr-side-head span {
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #0f766e;
+  text-transform: uppercase;
+}
+
+.qr-side-head strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #17365d;
+}
+
+.verify-side-v65 .qr-large.real-qr {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 10px #ffffff, 0 12px 28px rgba(15, 23, 42, 0.12);
+}
+
+.verify-side-v65 .qr-url {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.verify-side-v65 .qr-caption {
+  margin-top: 12px;
+  color: #17365d;
+  font-weight: 900;
+  text-align: center;
+}
+
+.verify-side-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 20px 0;
+}
+
+.mini-verify-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.mini-verify-summary div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.mini-verify-summary span {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.mini-verify-summary strong {
+  font-size: 14px;
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.verify-actions-v65 {
+  margin-top: 20px;
+}
+
+.verify-actions-v65 .big-action {
+  width: 100%;
+}
+
+/* v6.5: 결과 화면 CTA 위계 재보강 */
+.result-actions-v6 .primary-result-action {
+  background: #17365d;
+  color: #ffffff;
+  box-shadow: 0 16px 28px rgba(23, 54, 93, 0.18);
+}
+
+.result-actions-v6 .secondary-result-action {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #17365d;
+}
+
+.result-actions-v6 .tertiary-result-action {
+  background: transparent;
+  color: #475569;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+body.report-screen.user-mode .evidence-score strong {
+  font-size: 42px;
+}
+
+body.report-screen.user-mode .evidence-score span {
+  font-weight: 900;
+}
+
+@media (max-width: 1180px) {
+  body.user-mode.verify-screen .verify-audit-layout.verify-workspace-v65 {
+    grid-template-columns: 1fr;
+    width: min(860px, calc(100vw - 32px));
+  }
+
+  .verify-side-v65 {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  body.user-mode.verify-screen .verify-audit-layout.verify-workspace-v65 {
+    width: 100%;
+  }
+
+  .verify-workspace-v65 .verify-card-hero.verify-hero-v65 {
+    padding: 24px;
+    display: block;
+  }
+
+  .verify-hero-stamp {
+    display: none;
+  }
+
+  .evidence-package-table,
+  .verify-side-v65 {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .evidence-package-table .verify-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .evidence-package-table .verify-row strong {
+    text-align: left;
+  }
+
+  .verify-side-v65 .qr-large.real-qr {
+    width: 190px;
+    height: 190px;
   }
 }
