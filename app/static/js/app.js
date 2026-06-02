@@ -11,7 +11,7 @@ const state = {
   contractName: "평택 오션 센트럴 비즈 분양 상담",
   contractType: "부동산 분양",
   contractFile: "오션센트럴비즈_분양계약서.pdf",
-  addendumName: "수익조건_확약서.pdf",
+  addendumName: "답변_확약서_수익조건.pdf",
   addendumHash: "sha256:d4f7a9b2e18c6f0a34b91d6c2a7e51b9f0d3c8a5e67b4c2d19a0f83e6c7b2a91",
   addendumUploaded: false,
   addendumRequested: false,
@@ -67,7 +67,7 @@ const state = {
   trustOpen: false,
   contractRecordOpen: false,
   events: [
-    ["UI_VERSION", "contract_mirror_ui_v6_12_simplified_core_flow"],
+    ["UI_VERSION", "contract_mirror_ui_v12_state_logic_polish"],
     ["FLOW", "contract_locked_before_recording"]
   ]
 };
@@ -81,8 +81,8 @@ const confirmationQuestions = [
   },
   {
     id: 2,
-    short: "확약서 또는 특약 가능 여부",
-    text: "이 내용을 특약이나 확약서로 남길 수 있나요?",
+    short: "답변/확약서 첨부 가능 여부",
+    text: "이 답변을 문서나 확약서로 남겨 검증 카드에 첨부할 수 있나요?",
     basis: "녹취 발언 ↔ 계약서 제5조"
   },
   {
@@ -93,7 +93,7 @@ const confirmationQuestions = [
   }
 ];
 
-const STORAGE_KEY = "contractMirrorV6_12SimplifiedCoreFlowState";
+const STORAGE_KEY = "contractMirrorV12StateLogicPolish";
 
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -211,10 +211,13 @@ function render() {
 
 function keepMobileScreenAtTop() {
   requestAnimationFrame(() => {
-    const isWorkspace = ["report", "addendum", "verify"].includes(state.step) && state.device === "host";
     const phoneScreen = document.querySelector(".phone-screen");
-    if (phoneScreen && !isWorkspace) phoneScreen.scrollTop = 0;
-    if (!isJudge() && !isWorkspace) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const screen = document.querySelector("#screen");
+    const workspace = document.querySelector(".workspace");
+    if (phoneScreen) phoneScreen.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (screen) screen.scrollTop = 0;
+    if (workspace) workspace.scrollTop = 0;
+    if (!isJudge()) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   });
 }
 
@@ -270,7 +273,7 @@ function renderShell() {
     start: "",
     create: "세션 만들기",
     upload: "계약서 등록",
-    lock: "원본 해시",
+    lock: "기록 확인",
     invite: "초대",
     waiting: readyToRecord() ? "녹취 준비 완료" : "상대방 대기",
     identity: "본인확인",
@@ -278,8 +281,8 @@ function renderShell() {
     recording: "녹취 중",
     processing: "분석 중",
     report: "결과",
-    addendum: "추가 문서",
-    verify: "기록증",
+    addendum: "사후 확인",
+    verify: "검증 카드",
     failure: "진행 불가"
   };
   $("#userStatusMini").textContent = mini[state.step] || "진행 중";
@@ -453,7 +456,7 @@ function judgeDashboardScreen() {
         <div class="judge-status-pill done">QR 검증 카드 보관 완료</div>
       </div>
       <h2 class="judge-verify-title">계약 설명 검증 카드 보관 완료</h2>
-      <p class="judge-verify-desc">계약서 원본, 설명 녹취, AI 분석 리포트, 양측 동의 기록이 하나의 검증 카드로 묶였습니다.</p>
+      <p class="judge-verify-desc">계약서 원본, 설명 녹취, AI 분석 결과, 양측 동의 기록이 하나의 검증 카드로 묶였습니다.</p>
       <div class="judge-verify-grid">
         <section class="judge-evidence-card">
           <h3 class="judge-card-title">세션 증거 요약</h3>
@@ -537,7 +540,7 @@ function judgeDashboardScreen() {
           <div class="judge-timeline-list">${timeline.map(([label, done, detail]) => judgeTimelineItem(label, done, detail)).join("")}</div>
           <div class="recording-compare-card">
             <h3>일반 녹취 vs 계약미러</h3>
-            <div class="compare-mini-grid"><div><strong>일반 녹취</strong><span>계약서 기준·조항 연결·사후 검증이 불명확</span></div><div><strong>계약미러</strong><span>본인확인·해시·AI 리포트·QR 검증으로 연결</span></div></div>
+            <div class="compare-mini-grid"><div><strong>일반 녹취</strong><span>계약서 기준·조항 연결·사후 검증이 불명확</span></div><div><strong>계약미러</strong><span>본인확인·분석 결과·검증 카드·QR 확인으로 연결</span></div></div>
           </div>
         </aside>
         <main class="judge-center">
@@ -581,7 +584,12 @@ function renderScreen() {
       report: reportScreen,
       addendum: addendumScreen,
       verify: verifyScreen,
-      failure: failureScreen
+      failure: failureScreen,
+      "invite-code": inviteCodeScreen,
+      "participant-consent": inviteeConsentScreen,
+      "participant-ready": inviteeReadyScreen,
+      "participant-recording": inviteeRecordingScreen,
+      "participant-done": inviteeDoneScreen
     };
     screen.innerHTML = (screens[state.step] || startScreen)();
   }
@@ -590,31 +598,100 @@ function renderScreen() {
 
 function startScreen() {
   return wrap(`
-    <div class="field-home-screen core-home-screen v612-home-screen">
-      <div class="screen-kicker">모바일 현장 보호 플로우</div>
-      <h2 class="screen-title trust-title field-hero-title v612-hero-title">
-        “수익 보장됩니다”라고 들었는데,<br>
-        계약서에는 “보장하지 않는다”고<br>
-        적혀 있다면?
-      </h2>
-      <p class="screen-desc v612-hero-desc">계약미러가 서명 전 확인할 위험을 찾아줍니다.</p>
-      <div class="risk-scenario-card visual-risk v612-risk-flow" aria-label="위험 상황 예시">
-        <div class="scenario-quote verbal"><span>💬 녹취 속 설명</span><strong>“월 수익은 거의 <mark class="cm-highlight claim">보장됩니다</mark>.”</strong></div>
-        <div class="scenario-bridge v612-bridge" aria-hidden="true"><span>↓</span><em>하지만 계약서에는</em></div>
-        <div class="scenario-quote document"><span>📄 계약서 조항</span><strong>“수익률 및 원금 회수 가능성은 <mark class="cm-highlight conflict">보장하지 않습니다</mark>.”</strong></div>
-        <div class="scenario-risk-label">위험도 높음</div>
+    <div class="cm-home-v7">
+      <div class="cm-home-scroll-v7">
+        <section class="cm-home-hero-v7" aria-labelledby="cmHomeTitle">
+          <div class="cm-home-chip-row-v7">
+            <span class="cm-home-chip-v7">AI 계약 설명 검증</span>
+          </div>
+
+          <h2 id="cmHomeTitle">
+            말과 계약서가<br />
+            다르게 보이는 순간을 찾습니다.
+          </h2>
+
+          <p class="cm-home-lead-v7">
+            녹취 설명과 계약서 조항을 나란히 비춰보고,<br />
+            충돌 가능성이 있는 지점을 확인 질문으로 바꿔줍니다.
+          </p>
+
+          <div class="cm-flow-chip-v7" aria-label="계약미러 진행 흐름">
+            <span>계약서 등록</span>
+            <i aria-hidden="true">→</i>
+            <span>설명 녹취</span>
+            <i aria-hidden="true">→</i>
+            <span>AI 분석</span>
+            <i aria-hidden="true">→</i>
+            <span>질문 리포트</span>
+          </div>
+        </section>
+
+        <section class="cm-mirror-core-v7" aria-label="계약미러 핵심 비교">
+          <div class="cm-mirror-stage-v7">
+            <article class="cm-side-card-v7 cm-side-voice-v7">
+              <div class="cm-side-label-v7">
+                <span class="cm-side-icon-v7" aria-hidden="true">🎙</span>
+                <em>말로 들은 설명</em>
+              </div>
+              <strong>수익<br />안정</strong>
+              <p>“월 300만 원 정도는<br />안정적으로 나옵니다.”</p>
+            </article>
+
+            <div class="cm-crack-v7" aria-hidden="true">
+              <span class="cm-crack-line-v7"></span>
+            </div>
+
+            <article class="cm-side-card-v7 cm-side-contract-v7">
+              <div class="cm-side-label-v7">
+                <span class="cm-side-icon-v7" aria-hidden="true">📄</span>
+                <em>계약서 조항</em>
+              </div>
+              <strong>책임<br />없음</strong>
+              <p>“회사는 수익 발생 여부에 대해<br />책임지지 않습니다.”</p>
+            </article>
+          </div>
+
+          <div class="cm-conflict-badge-v7">충돌 가능성 감지</div>
+
+          <div class="cm-ai-card-v7">
+            <span>AI가 하는 일</span>
+            <strong>충돌 지점을 질문으로 바꿉니다.</strong>
+          </div>
+
+          <div class="cm-question-card-v7">
+            <span>AI가 바꾼 질문</span>
+            <p>“월 300만 원은<br />보장 수익인가요,<br />예상 수익인가요?”</p>
+          </div>
+        </section>
+
+        <section class="cm-choice-copy-v7" aria-label="계약미러 시작 안내">
+          <strong>불안한 계약 설명이 있다면</strong>
+          <p>녹취와 계약서를 올려 말과 조항이 다르게 읽히는 지점을 먼저 확인해보세요.</p>
+        </section>
       </div>
-      <div class="bottom-actions field-fixed-cta v612-fixed-cta">
-        <button class="big-action" data-action="go-create">계약 검증 시작하기</button>
-        <button class="ghost-inline-action subtle-join-link" data-action="join-contractor">초대번호가 있나요? 참여하기</button>
+
+      <div class="cm-home-fixed-cta-v7" aria-label="계약미러 빠른 시작">
+        <button class="cm-fixed-main-v7" type="button" data-action="create-session">
+          계약 설명 검증 시작하기
+        </button>
+        <button class="cm-fixed-sub-v7" type="button" data-action="join-contractor">
+          초대 코드
+        </button>
       </div>
     </div>
   `);
 }
 
+
+function stepTitleHTML(stepText, title, options = {}) {
+  const noBack = options.noBack ? " no-back" : "";
+  return `<div class="cm-step-title-row${noBack}"><span class="screen-step-label${noBack}">${stepText}</span><strong>${title}</strong></div>`;
+}
+
 function createRoomScreen() {
   return wrap(`
-    <div class="screen-kicker">계약 확인 기록 시작</div>
+    <button class="screen-back-button" data-action="go-start" type="button" aria-label="처음으로 돌아가기">←</button>
+    ${stepTitleHTML("Step 1 / 4", "계약 확인 기록 시작")}
     <h2 class="screen-title">오늘의 계약을 확인할 준비를 합니다.</h2>
     <p class="screen-desc">계약서, 설명 녹취, 동의 기록을 하나의 검증 흐름으로 묶습니다.</p>
     <div class="form-grid compact-form-grid">
@@ -622,29 +699,26 @@ function createRoomScreen() {
       <div class="field"><label>계약 유형</label><select disabled><option>${state.contractType}</option></select></div>
     </div>
     <div class="bottom-actions one-primary-actions">
-      <button class="big-action" data-action="create-session">계약서 등록하기</button>
-      <button class="ghost-inline-action" data-action="go-start">← 이전</button>
+      <button class="big-action" data-action="create-session">다음: 기준 계약서 등록하기</button>
     </div>
   `);
 }
 
 function uploadContractScreen() {
   return wrap(`
-    <div class="screen-kicker">기준 계약서</div>
+    <button class="screen-back-button" data-action="go-start" type="button" aria-label="처음으로 돌아가기">←</button>
+    ${stepTitleHTML("Step 1 / 4", "기준 계약서 등록")}
     <h2 class="screen-title compact">기준 계약서를 등록하세요.</h2>
-    <p class="screen-desc">AI가 이 계약서를 기준으로 녹취와 다른 부분을 찾습니다.</p>
+    <p class="screen-desc">먼저 계약서를 올리면, 다음 단계에서 녹취 설명과 비교합니다.</p>
     <button class="upload-method-card primary single-upload-card" data-action="upload-contract" type="button">
       <span class="upload-method-icon">📄</span>
-      <strong>계약서 등록하기</strong>
-      <em>PDF 파일을 불러옵니다.</em>
+      <strong>PDF 계약서 불러오기</strong>
+      <em>계약 조항 비교의 기준 문서입니다.</em>
       <small>${state.contractFile}</small>
     </button>
     <div class="upload-alt-links" aria-label="다른 등록 방법">
       <button class="ghost-inline-action" data-action="contract-link-ready" type="button">링크로 불러오기</button>
       <button class="ghost-inline-action" data-action="contract-scan-ready" type="button">카메라 스캔</button>
-    </div>
-    <div class="bottom-actions one-primary-actions">
-      <button class="ghost-inline-action" data-action="go-create">← 이전</button>
     </div>
   `);
 }
@@ -652,64 +726,81 @@ function uploadContractScreen() {
 function contractRecordBlock() {
   if (!state.contractRecordOpen && !isJudge()) {
     return `
-      <div class="record-detail">
-        <div class="record-summary"><strong>계약서 원본 해시가 생성되었습니다.</strong><br>이 해시는 이후 같은 계약서인지 확인하기 위한 원본 기준값입니다.</div>
-        <button class="disclosure-button" data-action="toggle-contract-record">원본 기준값 설명 보기</button>
+      <div class="record-detail cm-user-record-note-v10">
+        <div class="record-summary"><strong>계약서 기준 기록이 생성되었습니다.</strong><br>이 기록은 이후 같은 계약서인지 확인하기 위한 기준값입니다.</div>
+        <button class="disclosure-button" data-action="toggle-contract-record">기록 기준 설명 보기</button>
       </div>
     `;
   }
   return `
-    <div class="record-detail">
-      <div class="record-summary"><strong>계약서 원본 해시 생성</strong><br>이 값은 계약서 원문이 아니라, 이후 동일 문서 여부를 확인하기 위한 기준값입니다.</div>
-      <div class="hash-chip">${state.contractHash}</div>
-      <p class="screen-desc small">심사위원 모드에서는 전체 해시와 세션 연결 상태를 확인할 수 있습니다.</p>
-      ${!isJudge() ? `<button class="disclosure-button" data-action="toggle-contract-record">원본 기준값 설명 접기</button>` : ""}
+    <div class="record-detail cm-user-record-note-v10">
+      <div class="record-summary"><strong>계약서 기준 기록 생성</strong><br>계약서 원문을 노출하지 않고, 나중에 동일 문서인지 확인할 수 있는 기준 기록입니다.</div>
+      ${isJudge() ? `<div class="hash-chip">${state.contractHash}</div>` : `<div class="cm-record-ok-chip-v10">기준 기록 생성 완료</div>`}
+      <p class="screen-desc small">자세한 기록 정보는 PC 리포트 이후 검증 카드에서 확인할 수 있습니다.</p>
+      ${!isJudge() ? `<button class="disclosure-button" data-action="toggle-contract-record">기록 기준 설명 접기</button>` : ""}
     </div>
   `;
 }
 
 function lockContractScreen() {
   return wrap(`
-    <div class="screen-kicker">계약서 확인</div>
+    <button class="screen-back-button" data-action="go-upload" type="button" aria-label="계약서 등록으로 돌아가기">←</button>
+    ${stepTitleHTML("Step 1 / 4", "기준 계약서 확인")}
     <h2 class="screen-title compact">등록된 계약서를 확인하세요.</h2>
     <p class="screen-desc">이 문서를 기준으로 녹취 설명과 다른 부분을 찾습니다.</p>
-    <div class="info-card v69-document-card">
-      <h3>등록된 계약서</h3>
+    <div class="info-card v69-document-card cm-file-confirm-card">
+      <div class="cm-file-card-head">
+        <h3>등록된 계약서</h3>
+        <button class="cm-file-remove-button" data-action="go-upload" type="button" aria-label="계약서 다시 등록하기">×</button>
+      </div>
       <div class="info-row"><span>파일명</span><span>${state.contractFile}</span></div>
       <div class="info-row"><span>문서</span><span>15페이지 · PDF</span></div>
     </div>
-    <div class="supporting-doc-inline v612-optional-docs">
-      <strong>추가 자료가 있나요?</strong>
-      <span>확약서·특약·홍보자료는 결과 화면에서 추가할 수 있습니다.</span>
-      <button class="ghost-inline-action" data-action="go-addendum" type="button">추가 자료 등록</button>
+    <p class="screen-desc small cm-next-step-note">다음 단계에서 계약 상대방을 초대하고, 설명 녹취를 준비합니다.</p>
+    <div class="supporting-doc-inline v612-optional-docs cm-pre-doc-note-v9">
+      <strong>사후 확인 문서는 PC 리포트 이후에 첨부합니다.</strong>
+      <span>먼저 설명 녹취와 계약서 비교를 완료한 뒤, 답변·확약서를 원 분석 결과와 분리해 검증 카드에 연결합니다.</span>
     </div>
     <div class="bottom-actions one-primary-actions">
-      <button class="big-action" data-action="lock-contract">다음</button>
-      <button class="ghost-inline-action" data-action="go-upload">← 이전</button>
+      <button class="big-action" data-action="lock-contract">다음: 참여자 초대하기</button>
     </div>
   `);
 }
 
 function inviteScreen() {
+  const hostReady = state.contractor.verified && state.contractor.consent && !state.contractor.rejected;
+  const explainerReady = state.explainer.verified && state.explainer.consent && !state.explainer.rejected;
+  const ready = readyToRecord();
+  const rowClass = ready ? "ready" : "waiting";
   return wrap(`
-    <div class="screen-kicker">상대방 초대</div>
-    <h2 class="screen-title compact">상대방에게 이 화면을 보여주세요.</h2>
-    <p class="screen-desc">계약자와 설명자가 각자 휴대폰에서 본인확인과 동의를 진행합니다.</p>
+    <button class="screen-back-button" data-action="go-lock" type="button" aria-label="계약서 확인으로 돌아가기">←</button>
+    ${stepTitleHTML("Step 2 / 4", "참여자 초대 및 동의")}
+    <h2 class="screen-title compact">설명자에게 이 코드를 보여주세요.</h2>
+    <p class="screen-desc">계약 설명을 들려줄 사람이 입장하면 본인확인과 녹취 동의를 함께 진행합니다.</p>
+    <div class="invite-role-note-v8 invite-logic-note-v12">
+      <strong>${ready ? "양쪽 입장과 동의가 완료되었습니다." : "설명자 입장을 기다리고 있습니다."}</strong>
+      <span>${ready ? "이제 녹취 동의 상태를 확인하고 설명 녹취를 시작할 수 있습니다." : "상대가 초대 코드로 입장하면 다음 단계로 이동할 수 있습니다."}</span>
+    </div>
     <div class="invite-code-card-v612">
       <span>초대 코드</span>
       <strong>${state.inviteCode}</strong>
-      <em>상대방이 코드를 입력하거나 QR을 스캔하면 연결됩니다.</em>
+      <em>설명자가 이 코드를 입력하거나 QR을 스캔하면 연결됩니다.</em>
     </div>
     <div class="qr-placeholder" aria-label="초대 QR"></div>
-    <div class="role-wait-list compact-role-wait">
-      <div><span>계약 설명을 듣는 사람</span><strong>대기 중</strong></div>
-      <div><span>계약 내용을 설명하는 사람</span><strong>대기 중</strong></div>
+    <div class="role-wait-list compact-role-wait invite-state-list-v12 ${rowClass}">
+      <div><span>계약 설명을 듣는 사람</span><strong class="${hostReady ? "done" : "wait"}">${hostReady ? "준비 완료" : "동의 필요"}</strong></div>
+      <div><span>계약 내용을 설명하는 사람</span><strong class="${explainerReady ? "done" : "wait"}">${explainerReady ? "입장 완료" : "입장 대기 중"}</strong></div>
     </div>
-    <div class="bottom-actions one-primary-actions">
-      <button class="big-action" data-action="go-waiting">준비 상태 확인하기</button>
-      <button class="ghost-inline-action" data-action="go-lock">← 이전</button>
+    <div class="bottom-actions one-primary-actions invite-actions-v12">
+      ${ready ? `
+        <button class="big-action" data-action="go-waiting">다음: 녹취 동의 확인하기</button>
+      ` : `
+        <button class="big-action" type="button" disabled>상대 입장 대기 중</button>
+        <button class="ghost-inline-action demo-progress-link-v12" data-action="demo-complete-explainer" type="button">데모: 설명자 입장 완료 처리</button>
+      `}
     </div>
   `);
+
 }
 
 function statusText(done, rejected = false) {
@@ -762,24 +853,118 @@ function waitingRoomScreen() {
   const ready = readyToRecord();
   const rejected = hasRejection();
   return wrap(`
-    <div class="screen-kicker">참여자 준비 상태</div>
+    <button class="screen-back-button" data-action="go-invite" type="button" aria-label="초대 코드로 돌아가기">←</button>
+    ${stepTitleHTML("Step 2 / 4", "동의 상태 확인")}
     <h2 class="screen-title compact">양측 준비 상태 확인</h2>
-    <p class="screen-desc">양측 동의가 완료되면 녹취를 시작할 수 있습니다.</p>
+    <p class="screen-desc">계약자와 설명자가 모두 본인확인과 녹취 동의를 완료해야 다음 단계로 이동합니다.</p>
     <div class="waiting-control-tower">
       ${waitingCommandCard("계약자", "박주원", state.contractor, state.contractor.consent ? "본인확인과 녹취 동의가 완료되었습니다." : "계약 설명을 듣는 사람의 본인확인과 동의를 확인합니다.")}
       ${waitingCommandCard("설명자", "대기 중", state.explainer, state.explainer.consent ? "본인확인과 녹취 동의가 완료되었습니다." : "상대방의 접속 및 녹취 동의를 기다리고 있습니다.")}
     </div>
     <div class="waiting-state-panel refined">
       <div class="waiting-pulse" aria-hidden="true"></div>
-      <div><strong>${ready ? "녹취 시작 준비 완료" : "세션 연결 정상"}</strong><p>${ready ? "양측 동의가 완료되었습니다. 녹취를 시작할 수 있습니다." : "초대번호가 유효하며 시스템이 상대방의 응답을 기다리고 있습니다."}</p></div>
+      <div><strong>${ready ? "녹취 시작 준비 완료" : "설명자 입장 대기 중"}</strong><p>${ready ? "양측 동의가 완료되었습니다. 설명 녹취를 시작할 수 있습니다." : "초대 코드가 유효하며, 상대방이 입장하면 동의 상태가 업데이트됩니다."}</p></div>
     </div>
     ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
     ${rejected ? `<div class="bottom-actions"><button class="danger-action" data-action="go-failure">거부 상태 확인하기</button></div>` : `
-      <div class="bottom-actions">
-        <button class="big-action" data-action="start-recording" ${ready ? "" : "disabled"}>녹취 시작하기</button>
-        <button class="secondary-action" data-action="go-invite">이전</button>
+      <div class="bottom-actions one-primary-actions">
+        <button class="big-action" data-action="start-recording" ${ready ? "" : "disabled"}>다음: 설명 녹취 시작하기</button>
       </div>
     `}
+  `);
+}
+
+
+function inviteCodeScreen() {
+  return wrap(`
+    <button class="screen-back-button" data-action="go-start" type="button" aria-label="처음으로 돌아가기">←</button>
+    ${stepTitleHTML("초대 참여 1 / 3", "초대 코드 입력")}
+    <h2 class="screen-title compact">전달받은 초대 코드를 입력하세요.</h2>
+    <p class="screen-desc">계약 설명을 함께 확인하기 위해 계약자가 보낸 초대 코드로 계약 방에 참여합니다.</p>
+    <div class="invite-code-entry-card-v9" aria-label="초대 코드 입력 예시">
+      <label>초대 코드</label>
+      <div class="invite-code-input-mock-v9">${state.inviteCode}</div>
+      <small>데모에서는 기본 초대 코드가 자동 입력되어 있습니다.</small>
+    </div>
+    <div class="safe-notice compact-legal-note">참여 후 본인확인과 녹취 동의가 진행됩니다.</div>
+    <div class="bottom-actions one-primary-actions">
+      <button class="big-action" data-action="submit-invite-code">계약 방 참여하기</button>
+    </div>
+  `);
+}
+
+function inviteeConsentScreen() {
+  return wrap(`
+    <button class="screen-back-button" data-action="go-invite-code" type="button" aria-label="초대 코드 입력으로 돌아가기">←</button>
+    ${stepTitleHTML("초대 참여 2 / 3", "녹취 및 AI 분석 동의")}
+    <h2 class="screen-title compact">녹취 참여에 동의해주세요.</h2>
+    <p class="screen-desc">이 계약 설명은 녹취되어 기준 계약서 조항과 비교 분석됩니다.</p>
+    <div class="legal-consent-list compact-consent-list" aria-label="녹취 참여 동의 항목">
+      <div class="legal-consent-item"><span class="consent-box">✓</span><div><strong>본인확인에 동의합니다.</strong><small>누가 설명에 참여했는지 기록합니다.</small></div></div>
+      <div class="legal-consent-item"><span class="consent-box">✓</span><div><strong>계약 설명 녹취에 동의합니다.</strong><small>현장에서 들은 설명을 계약서와 비교합니다.</small></div></div>
+      <div class="legal-consent-item"><span class="consent-box">✓</span><div><strong>AI 분석에 동의합니다.</strong><small>법률 판단이 아닌 위험 탐지 보조 기능입니다.</small></div></div>
+    </div>
+    <div class="bottom-actions one-primary-actions">
+      <button class="big-action" data-action="agree-invitee-recording">동의하고 녹취 참여 준비하기</button>
+      <button class="ghost-inline-action danger-link" data-action="go-start">참여하지 않기</button>
+    </div>
+  `);
+}
+
+function inviteeReadyScreen() {
+  return wrap(`
+    ${stepTitleHTML("초대 참여 2 / 3", "동의 완료", { noBack: true })}
+    <h2 class="screen-title compact">녹취 참여 준비가 완료되었습니다.</h2>
+    <p class="screen-desc">계약자가 녹취를 시작하면 아래 버튼으로 설명 녹취 화면에 참여할 수 있습니다.</p>
+    <div class="waiting-state-panel refined invitee-ready-panel-v9">
+      <div class="waiting-pulse" aria-hidden="true"></div>
+      <div><strong>계약자 녹취 시작 대기 중</strong><p>데모에서는 아래 버튼을 눌러 녹취 참여 화면으로 이동합니다.</p></div>
+    </div>
+    <div class="status-card-grid">
+      <div class="status-card"><div class="role-title"><strong>나</strong><span class="status-chip done">준비 완료</span></div><div class="status-list"><div class="status-item"><span>본인확인</span><span class="status-chip done">완료</span></div><div class="status-item"><span>녹취 동의</span><span class="status-chip done">완료</span></div></div></div>
+      <div class="status-card"><div class="role-title"><strong>계약자</strong><span class="status-chip wait">대기</span></div><div class="status-list"><div class="status-item"><span>녹취 시작</span><span class="status-chip wait">대기 중</span></div></div></div>
+    </div>
+    <div class="bottom-actions one-primary-actions">
+      <button class="big-action" data-action="go-participant-recording">녹취 참여하기</button>
+    </div>
+  `);
+}
+
+function inviteeRecordingScreen() {
+  return wrap(`
+    ${stepTitleHTML("초대 참여 3 / 3", "설명 녹취 참여", { noBack: true })}
+    <h2 class="screen-title compact">계약 설명 녹취 중입니다.</h2>
+    <p class="screen-desc">지금 설명되는 발언은 계약서 조항과 함께 비교 분석됩니다.</p>
+    <section class="identity-recording-strip compact-invitee-recording-v9">
+      <div class="identity-person"><span>계약자</span><strong>박주원</strong><em>본인확인 완료</em></div>
+      <div class="identity-link-line" aria-hidden="true"></div>
+      <div class="identity-person"><span>설명 참여자</span><strong>나</strong><em>녹취 동의 완료</em></div>
+    </section>
+    <div class="recording-indicator"><span class="pulse-dot"></span><span>REC</span></div>
+    <div class="timer-label">녹취 길이</div>
+    <div class="timer">03:20</div>
+    <div class="recording-waveform" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="safe-notice">계약자가 녹취를 종료하면 AI 분석 결과가 생성됩니다.</div>
+    <div class="bottom-actions one-primary-actions">
+      <button class="big-action" data-action="complete-participant-recording">녹취 참여 완료</button>
+    </div>
+  `);
+}
+
+function inviteeDoneScreen() {
+  return wrap(`
+    ${stepTitleHTML("초대 참여 완료", "참여 완료", { noBack: true })}
+    <h2 class="screen-title compact">녹취 참여가 완료되었습니다.</h2>
+    <p class="screen-desc">계약자가 상세 분석 리포트를 열면 위험 항목과 확인 질문을 함께 확인할 수 있습니다.</p>
+    <div class="info-card invitee-done-card-v9">
+      <h3>기록 상태</h3>
+      <div class="mini-row"><span>본인확인</span><span>완료</span></div>
+      <div class="mini-row"><span>녹취 동의</span><span>완료</span></div>
+      <div class="mini-row"><span>녹취 참여</span><span>완료</span></div>
+    </div>
+    <div class="bottom-actions one-primary-actions">
+      <button class="secondary-action" data-action="go-start">처음 화면으로 돌아가기</button>
+    </div>
   `);
 }
 
@@ -850,9 +1035,9 @@ function participantDeviceScreen(role) {
 
 function recordingScreen() {
   return wrap(`
-    <div class="screen-kicker">계약 설명 녹취</div>
+    ${stepTitleHTML("Step 3 / 4", "설명 녹취", { noBack: true })}
     <h2 class="screen-title">계약 설명 녹취 중</h2>
-    <p class="screen-desc">이 설명은 계약서 원본과 연결된 검증 세션으로 기록됩니다.</p>
+    <p class="screen-desc">설명자의 발언을 녹취하고, AI가 기준 계약서 조항과 비교할 준비를 합니다.</p>
     <section class="identity-recording-strip">
       <div class="identity-person"><span>계약 설명을 듣는 사람</span><strong>박주원</strong><em>본인확인 완료</em></div>
       <div class="identity-link-line" aria-hidden="true"></div>
@@ -868,7 +1053,7 @@ function recordingScreen() {
       <span class="active">● 설명 녹취 중</span>
     </div>
     <div class="bottom-actions one-primary-actions">
-      <button class="big-action" data-action="stop-recording">녹취 종료하고 분석하기</button>
+      <button class="big-action" data-action="stop-recording">녹취 종료하고 AI 분석 시작하기</button>
     </div>
   `);
 }
@@ -877,7 +1062,7 @@ const processingSteps = [
   "녹취 내용 정리",
   "계약서 조항 확인",
   "불일치 후보 탐지",
-  "검증 카드 준비"
+  "PC 리포트 준비"
 ];
 
 function processingScreen() {
@@ -886,15 +1071,20 @@ function processingScreen() {
     return `<div class="processing-card ${cls}"><span class="num">${idx + 1}</span><strong>${label}</strong></div>`;
   }).join("");
   return wrap(`
-    <div class="screen-kicker">AI 분석 중</div>
+    ${stepTitleHTML("Step 4 / 4", "AI 분석", { noBack: true })}
     <h2 class="screen-title compact">AI가 계약서와 녹취를 대조하고 있습니다.</h2>
-    <p class="screen-desc">불일치 후보와 위험도를 확인하는 중입니다.</p>
+    <p class="screen-desc">불일치 후보와 확인 질문을 정리하는 중입니다.</p>
     <div class="progress-bar"><div class="progress-fill" style="width:${state.progress}%"></div></div>
     <div class="processing-list compact-processing-list">${list}</div>
     ${state.progress >= 100 ? `
-      <div class="strong-notice success">분석이 완료되었습니다. 계약 전 확인 질문을 먼저 확인하세요.</div>
+      <section class="report-bridge-card-v10 report-bridge-card-v13">
+        <span>상세 분석 완료</span>
+        <h3>상세 분석 리포트가 준비되었습니다.</h3>
+        <div class="cm-bridge-flow-v10"><strong>모바일 현장 확인</strong><i>→</i><strong>PC 상세 검토</strong></div>
+        <p>이 리포트는 계약서와 녹취를 비교한 분석 결과입니다. 최종 보관용 검증 카드는 질문 확인과 사후 확인 문서 첨부 후 만들 수 있습니다.</p>
+      </section>
       <div class="bottom-actions one-primary-actions">
-        <button class="big-action" data-action="go-report">분석 결과 보기</button>
+        <button class="big-action" data-action="go-report">PC 리포트 열기</button>
         ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
       </div>
     ` : `
@@ -967,10 +1157,10 @@ function reportScreen() {
   const cards = state.mismatches.map(mismatchCard).join("");
   const questions = confirmationQuestions.map(questionCard).join("");
   return wrap(`
-    <div class="report-workspace-v612 workspace-shell">
-      <header class="report-header-v612">
+    <div class="report-workspace-v612 workspace-shell report-workspace-v12 report-workspace-v13">
+      <header class="report-header-v612 report-header-v12 report-header-v13">
         <div>
-          <span class="screen-kicker">상세 검토 리포트</span>
+          <span class="screen-kicker">Step 4 / 4 · PC 상세 분석 리포트</span>
           <h2>계약 전 확인할 위험 3건</h2>
           <p>녹취 발언과 계약서 조항을 비교해, 서명 전에 확인할 질문을 정리했습니다.</p>
         </div>
@@ -979,6 +1169,10 @@ function reportScreen() {
           <strong>${state.contractFile}</strong>
         </div>
       </header>
+      <section class="report-priority-banner-v8 report-priority-banner-v12 report-priority-banner-v13">
+        <span>다음 행동</span>
+        <strong>계약 전, 아래 3개 질문은 반드시 설명자에게 확인하세요.</strong>
+      </section>
       <div class="report-grid-v612 workspace-grid">
         <section class="report-main-v612 workspace-main">
           <section class="primary-risk-hero-v612">
@@ -999,45 +1193,52 @@ function reportScreen() {
           <div class="mismatch-list">${cards}</div>
         </section>
         <aside class="report-action-panel-v612 workspace-side">
-          <div class="audit-card report-side-card-v612">
+          <div class="audit-card report-side-card-v612 report-side-card-v12 report-side-card-v13">
             <h3>다음 행동</h3>
-            <div class="next-step-stack-v612">
-              <div class="next-step-item-v612"><span>1</span><div><strong>필요한 질문 확인</strong><em>질문 카드를 복사해 상대방에게 바로 확인하세요.</em></div></div>
-              <div class="next-step-item-v612"><span>2</span><div><strong>추가 문서 등록</strong><em>확약서·특약이 있다면 지금 함께 남겨두세요.</em></div></div>
-              <div class="next-step-item-v612"><span>3</span><div><strong>검증 카드 보관</strong><em>최종 확인 기록을 생성해 나중에 다시 확인할 수 있습니다.</em></div></div>
+            <div class="next-step-stack-v612 next-step-stack-v12">
+              <div class="next-step-item-v612"><span>1</span><div><strong>질문 확인</strong><em>아래 질문을 복사해 설명자에게 확인하세요.</em></div></div>
+              <div class="next-step-item-v612"><span>2</span><div><strong>사후 확인 문서 첨부</strong><em>답변/확약서가 있다면 질문에 연결해 보관하세요.</em></div></div>
+              <div class="next-step-item-v612"><span>3</span><div><strong>검증 카드 만들기</strong><em>원 분석 결과와 사후 확인 기록을 하나로 정리합니다.</em></div></div>
             </div>
-            <div class="audit-row"><span>확인 기록 ID</span><strong>${state.sessionId}</strong></div>
-            <div class="audit-row"><span>최고 위험도</span><strong class="danger-text">높음</strong></div>
-            ${state.addendumRequested ? `<em class="request-state">확약서 요청 기록이 남았습니다.</em>` : ""}
-            ${state.addendumUploaded ? `<em class="request-state done">추가 확인 문서 등록: ${state.addendumName}</em>` : ""}
-            <div class="bottom-actions report-side-actions-v612 one-primary-actions">
-              <button class="big-action primary-result-action" data-action="go-verify">검증 카드 생성하기</button>
-              <button class="secondary-action secondary-result-action" data-action="go-addendum">확약서/추가 문서 등록하기</button>
-              <button class="ghost-inline-action" data-action="request-assurance">확약서 요청 기록 남기기</button>
+            ${state.addendumUploaded ? `<em class="request-state done">사후 확인 문서 첨부: ${state.addendumName}</em>` : ""}
+            ${state.addendumRequested ? `<em class="request-state">답변/확약서 요청 기록이 남았습니다.</em>` : ""}
+            <div class="report-record-mini-v12">
+              <span>분석 세션 ID</span><strong>${state.sessionId}</strong>
+            </div>
+            <p class="cm-legal-note-v13">PC 리포트는 분석 결과 확인용입니다. 최종 보관용 검증 카드는 질문 확인과 사후 확인 문서 첨부 후 만들 수 있습니다.</p>
+            <div class="bottom-actions report-side-actions-v612 report-side-actions-v12 one-primary-actions">
+              <button class="big-action primary-result-action" data-action="go-verify">검증 카드 만들기</button>
+              <button class="secondary-action secondary-result-action" data-action="go-addendum">답변/확약서 첨부하기</button>
+              <button class="ghost-inline-action" data-action="request-assurance">답변/확약서 요청 기록 남기기</button>
             </div>
           </div>
         </aside>
       </div>
     </div>
   `);
+
 }
 
 function addendumScreen() {
   return wrap(`
-    <div class="addendum-workspace-v612 workspace-shell">
-      <header class="report-header-v612">
+    <div class="addendum-workspace-v612 workspace-shell addendum-workspace-v12 addendum-workspace-v13">
+      <header class="report-header-v612 report-header-v12 report-header-v13">
         <div>
-          <span class="screen-kicker">추가 자료</span>
-          <h2>추가 자료가 있나요?</h2>
-          <p>확약서·특약·홍보자료·문자 캡처를 함께 확인할 수 있습니다.</p>
+          <span class="screen-kicker">선택 단계 · 사후 확인 기록</span>
+          <h2>사후 확인 문서를 남길까요?</h2>
+          <p>선택 사항입니다. 자료가 없어도 검증 카드를 만들 수 있습니다.</p>
         </div>
         <div class="report-meta-v611"><span>${state.sessionId}</span><strong>${state.contractFile}</strong></div>
       </header>
       <div class="addendum-grid-v612 workspace-grid">
-        <section class="addendum-main-card workspace-main">
+        <section class="addendum-main-card workspace-main addendum-main-card-v12">
+          <div class="addendum-purpose-card-v12 addendum-purpose-card-v13">
+            <strong>기존 AI 분석 결과를 바꾸지 않습니다.</strong>
+            <span>답변/확약서는 어떤 질문에 대한 사후 답변인지 연결해 검증 카드에 함께 보관합니다.</span>
+          </div>
           <div class="post-analysis-doc-grid compact-doc-grid v612-doc-grid">
             <button class="post-doc-card primary" data-action="upload-addendum" type="button">
-              <span>📄</span><strong>확약서 파일 업로드</strong><em>받은 확약서·특약서를 추가합니다.</em>
+              <span>📄</span><strong>답변/확약서 첨부</strong><em>받은 확약서·특약서를 사후 확인 문서로 연결합니다.</em>
             </button>
             <button class="post-doc-card" data-action="upload-addendum" type="button">
               <span>📷</span><strong>카메라로 촬영</strong><em>종이 문서를 촬영합니다.</em>
@@ -1047,57 +1248,63 @@ function addendumScreen() {
             </button>
           </div>
           ${state.addendumUploaded ? `
-            <section class="addendum-confirm-card">
-              <h3>추가 자료 등록 완료</h3>
+            <section class="addendum-confirm-card addendum-confirm-card-v13">
+              <h3>사후 확인 문서 첨부 완료</h3>
               <div class="verify-row"><span>문서명</span><strong>${state.addendumName}</strong></div>
-              <div class="verify-row"><span>등록 시점</span><strong>AI 분석 후 등록</strong></div>
-              <div class="verify-row"><span>문서 확인값</span><strong>생성 완료</strong></div>
-              <p>이 문서는 최종 검증 카드에 함께 포함됩니다.</p>
+              <div class="verify-row"><span>등록 시점</span><strong>AI 분석 후 사후 첨부</strong></div>
+              <div class="verify-row"><span>연결 방식</span><strong>확인 질문에 대한 답변 문서</strong></div>
+              <p>이 문서는 원 분석 세션을 바꾸지 않고, 검증 카드에 사후 확인 기록으로 함께 포함됩니다.</p>
             </section>
-          ` : `<div class="safe-notice">없다면 추가 자료 없이 검증 카드를 만들 수 있습니다.</div>`}
+          ` : `<div class="safe-notice optional-addendum-note-v12">자료가 없다면 바로 검증 카드를 만들 수 있습니다.</div>`}
         </section>
-        <aside class="addendum-side-card workspace-side">
+        <aside class="addendum-side-card workspace-side addendum-side-card-v13">
           <h3>왜 필요한가요?</h3>
-          <p>말로 들은 조건이 중요하다면 확약서나 특약으로 남겨 함께 보관하세요.</p>
+          <p>확약서 파일 자체보다, 어떤 녹취 발언·계약 조항·확인 질문에 대한 답변인지 맥락을 남기는 것이 핵심입니다.</p>
           <div class="mini-verify-summary">
-            <div><span>기준 계약서</span><strong>등록 완료</strong></div>
-            <div><span>설명 녹취</span><strong>03:20</strong></div>
-            <div><span>추가 자료</span><strong>${state.addendumUploaded ? "등록 완료" : "선택 가능"}</strong></div>
+            <div><span>원 분석 세션</span><strong>유지</strong></div>
+            <div><span>확인 질문</span><strong>3건</strong></div>
+            <div><span>사후 문서</span><strong>${state.addendumUploaded ? "첨부 완료" : "선택 가능"}</strong></div>
           </div>
+          <p class="cm-legal-note-v13">이 기록은 법적 판단을 대신하지 않으며, 계약서·녹취·확인 질문·사후 답변의 연결 관계를 보관합니다.</p>
           <div class="bottom-actions evidence-actions one-primary-actions">
-            <button class="big-action primary-result-action" data-action="go-verify">검증 카드 생성하기</button>
-            <button class="ghost-inline-action" data-action="go-report">AI 리포트로 돌아가기</button>
+            <button class="big-action primary-result-action" data-action="go-verify">검증 카드 만들기</button>
+            <button class="ghost-inline-action" data-action="go-report">PC 리포트로 돌아가기</button>
           </div>
         </aside>
       </div>
     </div>
   `);
+
 }
 
 function verifyScreen() {
   return wrap(`
-    <div class="verify-workspace-v612 workspace-shell">
+    <div class="verify-workspace-v612 workspace-shell cm-verify-workspace-v10 verify-workspace-v13">
       <section class="verify-audit-main workspace-main">
-        <div class="screen-kicker">검증 카드</div>
+        <div class="screen-kicker cm-verify-title-kicker-v10">검증 카드</div>
         <div class="verify-card-hero trust-seal-hero verify-hero-v65 v69-verify-hero v611-verify-hero no-stamp-v612">
           <div>
-            <span class="risk-badge verified">나중에 쓸 수 있는 기록</span>
-            <h2>계약 설명 검증 카드 보관 완료</h2>
-            <p>이 카드는 계약 당시의 계약서, 녹취, AI 분석 결과, 양측 동의 기록이 같은 세션에서 생성되었음을 확인하는 기록입니다.</p>
+            <span class="risk-badge verified">분쟁 대비 기록 정리</span>
+            <h2>계약 설명 검증 카드 생성</h2>
+            <p>이 카드는 원 분석 세션과 사후 확인 문서를 연결해 보관합니다. 법적 판단을 대신하지는 않지만, 계약서·녹취·질문·답변의 맥락을 한 번에 확인할 수 있습니다.</p>
             <div class="verify-inline-summary-v612" aria-label="검증 상태">
-              <span>기록 일치</span>
-              <span>위변조 확인 가능</span>
+              <span>원 분석 세션 유지</span>
+              <span>QR로 기록 확인 가능</span>
             </div>
           </div>
         </div>
         <section class="verify-status-card audit-strong trust-seal-card evidence-package-table v611-vault-summary-card">
           <h3>검증 기록 요약</h3>
-          <div class="verify-row"><span>계약 ID</span><strong>${state.sessionId}</strong></div>
-          <div class="verify-row"><span>양측 본인확인</span><strong>완료</strong></div>
-          <div class="verify-row danger-row"><span>계약 내용 위험 탐지</span><strong class="danger-text">높음 1건 · 중간 2건</strong></div>
-          <div class="verify-row"><span>기록 무결성</span><strong>정상</strong></div>
-          <div class="verify-row"><span>저장 위치</span><strong>${state.vaultSaved ? "계약미러 보안 보관함" : "보관 준비"}</strong></div>
-          <div class="verify-row addendum-row"><span>추가 확인 문서</span><strong>${state.addendumUploaded ? state.addendumName : "등록 없음"}</strong></div>
+          <div class="verify-row"><span>검증 기록 ID</span><strong>${state.sessionId}</strong></div>
+          <div class="verify-row"><span>생성 시각</span><strong>2026.06.02 19:42</strong></div>
+          <div class="verify-row danger-row"><span>위험 항목 수</span><strong class="danger-text">높음 1건 · 중간 2건</strong></div>
+          <div class="verify-row"><span>QR 검증 페이지</span><strong>생성 가능</strong></div>
+          <div class="verify-row"><span>보관 상태</span><strong>${state.vaultSaved ? "보관 완료" : "보관 준비"}</strong></div>
+          <div class="verify-row addendum-row"><span>사후 확인 문서</span><strong>${state.addendumUploaded ? state.addendumName : "첨부 없음"}</strong></div>
+        </section>
+        <section class="vault-ready-card-v611 vault-legal-note-v13">
+          <strong>법적 효력 보장 안내</strong>
+          <p>검증 카드는 법적 효력을 보장하지 않습니다. 다만 원 계약서, 녹취 발언, 확인 질문, 사후 답변/확약서를 하나의 맥락으로 정리해 분쟁 대비 참고 자료로 활용할 수 있습니다.</p>
         </section>
         <details class="verify-status-card hash-view technical-details-v65">
           <summary>기술 검증 정보 보기</summary>
@@ -1114,22 +1321,22 @@ function verifyScreen() {
       </section>
       <aside class="verify-qr-column verify-side-v65 workspace-side">
         <div class="qr-side-head">
-          <span>사후 검증용 QR</span>
+          <span>검증 카드 QR</span>
           <strong>CM-20260601-001</strong>
         </div>
-        <div class="qr-large real-qr" aria-label="사후 검증용 QR 코드"><span>CM</span></div>
+        <div class="qr-large real-qr" aria-label="검증 카드 QR 코드"><span>CM</span></div>
         <div class="qr-url">contract-mirror.kr/verify/CM-20260601-001</div>
-        <div class="qr-caption">검증 카드 확인하기</div>
+        <div class="qr-caption">검증 카드 보기</div>
         <div class="verify-side-divider"></div>
         <div class="mini-verify-summary">
-          <div><span>기록 무결성</span><strong>정상</strong></div>
-          <div><span>계약 내용 위험</span><strong class="danger-text">높음 1건</strong></div>
-          <div><span>추가 문서</span><strong>${state.addendumUploaded ? "포함" : "없음"}</strong></div>
+          <div><span>기록 확인</span><strong>가능</strong></div>
+          <div><span>위험 항목</span><strong class="danger-text">3건</strong></div>
+          <div><span>사후 문서</span><strong>${state.addendumUploaded ? "포함" : "없음"}</strong></div>
           <div><span>보관 상태</span><strong>${state.vaultSaved ? "보관 완료" : "보관 준비"}</strong></div>
         </div>
         <div class="bottom-actions evidence-actions verify-actions-v65 one-primary-actions v611-verify-actions">
           <button class="big-action primary-result-action" data-action="save-vault">검증 카드 보관하기</button>
-          <button class="secondary-action" data-action="go-report">리포트 내려받기</button>
+          <button class="secondary-action" data-action="go-report">PC 리포트로 돌아가기</button>
           <button class="ghost-inline-action" data-action="copy-share-link">공유용 링크 복사</button>
           ${isJudge() ? `<button class="secondary-action" data-action="open-trust">신뢰 로그 보기</button>` : ""}
         </div>
@@ -1223,14 +1430,29 @@ function handleAction(e) {
     "go-upload": () => setStep("upload"),
     "go-lock": () => setStep("lock"),
     "go-invite": () => setStep("invite"),
-    "join-contractor": () => { state.device = "contractor"; setStep("identity"); },
+    "join-contractor": () => { state.device = "host"; addEvent("INVITE_CODE_FLOW_OPENED", `invite_code=${state.inviteCode}`); setStep("invite-code"); },
+    "go-invite-code": () => setStep("invite-code"),
+    "submit-invite-code": () => { addEvent("INVITE_CODE_SUBMITTED", `invite_code=${state.inviteCode}`); setStep("participant-consent"); },
+    "agree-invitee-recording": () => { state.explainer.verified = true; state.explainer.consent = true; state.explainer.rejected = false; addEvent("INVITEE_CONSENT_COMPLETED", "recording=true, ai_analysis=true"); setStep("participant-ready"); },
+    "go-participant-recording": () => { addEvent("INVITEE_RECORDING_JOINED", "recording_screen=true"); setStep("participant-recording"); },
+    "complete-participant-recording": () => { addEvent("INVITEE_RECORDING_COMPLETED", "participant_done=true"); setStep("participant-done"); },
+    "demo-complete-explainer": () => {
+      state.contractor.verified = true;
+      state.contractor.consent = true;
+      state.contractor.rejected = false;
+      state.explainer.verified = true;
+      state.explainer.consent = true;
+      state.explainer.rejected = false;
+      addEvent("DEMO_PARTICIPANTS_READY", "contractor=true, explainer=true");
+      render();
+    },
     "go-waiting": () => setStep("waiting"),
     "go-failure": () => setStep("failure"),
-    "go-report": () => { addEvent("REPORT_VIEWED", `report_hash=${state.reportHash}`); setStep("report"); },
-    "go-addendum": () => { addEvent("ADDENDUM_STEP_OPENED", `session_id=${state.sessionId}`); setStep("addendum"); },
+    "go-report": () => { addEvent("PC_REPORT_VIEWED", `report_hash=${state.reportHash}`); setStep("report"); },
+    "go-addendum": () => { addEvent("POST_CONFIRM_DOC_STEP_OPENED", `session_id=${state.sessionId}`); setStep("addendum"); },
     "go-verify": () => { addEvent("VERIFY_URL_CREATED", `/verify/${state.sessionId}`); setStep("verify"); },
-    "request-assurance": () => { state.addendumRequested = true; addEvent("ASSURANCE_REQUESTED", `session_id=${state.sessionId}`); render(); },
-    "upload-addendum": () => { state.addendumUploaded = true; addEvent("ADDENDUM_UPLOADED", `file=${state.addendumName}, addendum_hash=${state.addendumHash}`); render(); },
+    "request-assurance": () => { state.addendumRequested = true; addEvent("ANSWER_ASSURANCE_REQUESTED", `session_id=${state.sessionId}`); render(); },
+    "upload-addendum": () => { state.addendumUploaded = true; addEvent("POST_CONFIRM_DOC_ATTACHED", `file=${state.addendumName}, doc_hash=${state.addendumHash}`); render(); },
     "contract-link-ready": () => { addEvent("CONTRACT_LINK_INPUT_SELECTED", "source=mobile_message_url"); setStep("lock"); },
     "contract-scan-ready": () => { addEvent("CONTRACT_SCAN_MODE_SELECTED", "source=mobile_camera_scan"); setStep("lock"); },
     "save-vault": () => {
@@ -1254,7 +1476,15 @@ function handleAction(e) {
     "view-explainer": () => { state.device = "explainer"; render(); },
     "create-session": () => { addEvent("SESSION_CREATED", `session_id=${state.sessionId}`); setStep("upload"); },
     "upload-contract": () => { addEvent("CONTRACT_UPLOADED", `file=${state.contractFile}`); setStep("lock"); },
-    "lock-contract": () => { addEvent("CONTRACT_HASH_CREATED", `contract_hash=${state.contractHash}`); addEvent("CONTRACT_STATUS", "locked_before_recording"); setStep("invite"); },
+    "lock-contract": () => {
+      state.contractor.verified = true;
+      state.contractor.consent = true;
+      state.contractor.rejected = false;
+      addEvent("CONTRACT_HASH_CREATED", `contract_hash=${state.contractHash}`);
+      addEvent("CONTRACT_STATUS", "locked_before_recording");
+      addEvent("HOST_READY", "contractor_identity_and_consent=preconfirmed_demo");
+      setStep("invite");
+    },
     "toggle-contract-record": () => { state.contractRecordOpen = !state.contractRecordOpen; render(); },
     "start-recording": () => { if (readyToRecord()) { addEvent("RECORDING_STARTED", "all_identity_and_consent_completed=true"); state.recording = true; setStep("recording"); } },
     "stop-recording": () => { addEvent("RECORDING_HASH_CREATED", `recording_hash=${state.recordingHash}, duration=03:20`); state.recording = false; setStep("processing"); },
@@ -1377,7 +1607,7 @@ function setupControls() {
     }
     if (c === "reset-all") {
       localStorage.removeItem(STORAGE_KEY);
-      window.location.href = isJudge() ? "/judge?v=611" : "/?v=611";
+      window.location.href = isJudge() ? "/judge?v=12" : "/?v=12";
     }
   }));
 }
@@ -1386,4 +1616,6 @@ setupControls();
 if (isJudge()) {
   state.trustOpen = true;
 }
+
+
 render();
