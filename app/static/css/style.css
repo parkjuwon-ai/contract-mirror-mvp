@@ -4115,3 +4115,1995 @@ body.report-screen.user-mode .evidence-score span {
     height: 190px;
   }
 }
+
+/* =========================================================
+   v6.6 Step 5 - Mobile Flow Productization
+   계약서 입력 방식 확장, 사용자 언어 정리, 확약서/추가 문서, AI 하이라이트
+   ========================================================= */
+.upload-method-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin: 18px 0 12px;
+}
+.upload-method-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  background: #ffffff;
+  color: var(--text);
+  border-radius: 22px;
+  padding: 18px 18px;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-areas: "icon title" "icon desc" "icon meta";
+  column-gap: 14px;
+  row-gap: 4px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.055);
+}
+.upload-method-card.primary {
+  border-color: rgba(15, 118, 110, 0.28);
+  background: linear-gradient(180deg, #ffffff 0%, #f2fbf8 100%);
+}
+.upload-method-card:focus-visible,
+.upload-method-card:hover {
+  outline: none;
+  transform: translateY(-1px);
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+}
+.upload-method-icon {
+  grid-area: icon;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+}
+.upload-method-card strong { grid-area: title; font-size: 15px; font-weight: 900; color: var(--primary); }
+.upload-method-card em { grid-area: desc; font-style: normal; font-size: 13px; line-height: 1.45; color: #64748b; }
+.upload-method-card small { grid-area: meta; color: var(--trust); font-weight: 800; overflow-wrap: anywhere; }
+
+.cm-highlight {
+  padding: 0 4px 1px;
+  border-radius: 5px;
+  font-weight: 900;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.cm-highlight.claim {
+  background: rgba(234, 179, 8, 0.22);
+  color: #713f12;
+}
+.cm-highlight.conflict {
+  background: rgba(159, 18, 57, 0.13);
+  color: #9f1239;
+}
+.cm-highlight.notice {
+  background: rgba(234, 88, 12, 0.14);
+  color: #9a3412;
+}
+.quote-panel blockquote,
+.judge-compare-text {
+  font-weight: 400;
+}
+
+.addendum-aware-actions {
+  gap: 6px;
+}
+.addendum-aware-actions .request-state {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+  color: #9a3412;
+}
+.addendum-aware-actions .request-state.done { color: var(--trust); }
+.post-analysis-actions {
+  display: grid;
+  gap: 10px;
+}
+.post-analysis-actions .primary-result-action {
+  order: 3;
+}
+.post-analysis-actions .secondary-result-action {
+  order: 1;
+}
+
+.addendum-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  gap: 18px;
+  width: 100%;
+}
+.addendum-main-card,
+.addendum-side-card,
+.addendum-confirm-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 26px;
+  padding: 24px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+}
+.post-analysis-doc-grid {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0 14px;
+}
+.post-doc-card {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 22px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-areas: "icon title" "icon desc";
+  gap: 4px 12px;
+}
+.post-doc-card.primary { background: #f0fdfa; border-color: rgba(15, 118, 110, .22); }
+.post-doc-card span { grid-area: icon; width: 42px; height: 42px; border-radius: 15px; background: #fff; display: grid; place-items: center; font-size: 21px; }
+.post-doc-card strong { grid-area: title; font-size: 15px; color: var(--primary); font-weight: 900; }
+.post-doc-card em { grid-area: desc; font-style: normal; color: #64748b; font-size: 13px; line-height: 1.5; }
+.addendum-confirm-card { margin-top: 16px; background: #f8fafc; }
+.addendum-confirm-card h3,
+.addendum-side-card h3 { margin-bottom: 14px; color: var(--primary); }
+.addendum-confirm-card p,
+.addendum-side-card p { color: #64748b; line-height: 1.65; }
+.addendum-row strong { color: var(--primary); }
+
+@media (max-width: 900px) {
+  .addendum-workspace { grid-template-columns: 1fr; }
+  .addendum-main-card,
+  .addendum-side-card,
+  .addendum-confirm-card { padding: 20px; }
+}
+
+/* ==========================================================
+   v6.7 Field Protection UX
+   - first action stronger
+   - field-ready visual risk example
+   - additional material prompt
+   - pre-contract question guidance
+   ========================================================== */
+:root {
+  --cm-bg-cool: #F8FAFC;
+  --cm-device-border: #334155;
+  --cm-burgundy: #9F1239;
+  --cm-teal: #0F766E;
+  --cm-orange: #EA580C;
+}
+
+body.user-mode {
+  background:
+    radial-gradient(circle at 14% 6%, rgba(15, 118, 110, 0.10), transparent 30%),
+    radial-gradient(circle at 86% 18%, rgba(51, 65, 85, 0.12), transparent 34%),
+    var(--cm-bg-cool) !important;
+}
+
+/* PC demo must look physically like a phone mirror, not a floating rectangle. */
+body.user-mode .phone-frame {
+  border: 12px solid var(--cm-device-border) !important;
+  border-radius: 44px !important;
+  padding: 0 !important;
+  background: var(--cm-device-border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden;
+}
+body.user-mode .phone-status-bar {
+  height: 48px;
+  padding: 0 20px;
+  background: var(--cm-device-border);
+}
+body.user-mode .phone-screen {
+  border-radius: 30px 30px 26px 26px;
+  background: #fbfaf7;
+}
+
+.field-home-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+.field-hero-title {
+  margin-bottom: 12px !important;
+  font-size: 31px !important;
+  line-height: 1.16 !important;
+  letter-spacing: -0.065em !important;
+}
+.field-hero-desc {
+  margin-bottom: 16px !important;
+  font-size: 15px !important;
+  line-height: 1.58 !important;
+}
+
+/* Visualize the core conflict instead of showing a passive gray paragraph. */
+.risk-scenario-card.visual-risk {
+  padding: 20px !important;
+  background: #fff;
+  border: 1px solid #e4e9f0;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
+}
+.visual-risk .scenario-quote {
+  margin-bottom: 0;
+  border-color: #e5e7eb;
+}
+.visual-risk .scenario-quote.verbal {
+  background: #fffaf0;
+  border-color: rgba(234, 88, 12, 0.22);
+}
+.visual-risk .scenario-quote.document {
+  background: #fff7f8;
+  border-color: rgba(159, 18, 57, 0.20);
+}
+.visual-risk .scenario-quote strong {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.scenario-conflict-arrow {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 10px 0;
+  color: var(--cm-burgundy);
+}
+.scenario-conflict-arrow span {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(159, 18, 57, 0.09);
+  font-size: 20px;
+  font-weight: 900;
+}
+.scenario-conflict-arrow strong {
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+.scenario-risk-chip {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(159, 18, 57, 0.10);
+  color: var(--cm-burgundy);
+  font-size: 13px;
+  font-weight: 900;
+}
+.field-fixed-cta {
+  margin-top: auto !important;
+  position: sticky;
+  bottom: 0;
+  padding-top: 12px;
+  background: linear-gradient(to bottom, rgba(251,250,247,0), rgba(251,250,247,0.96) 26%, rgba(251,250,247,1));
+}
+.field-fixed-cta .big-action {
+  min-height: 64px;
+  font-size: 17px;
+}
+
+.supporting-doc-card {
+  margin: 16px 0;
+  padding: 22px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 85, 0.11);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.055);
+}
+.supporting-doc-card h3 {
+  margin: 3px 0 8px;
+  color: var(--primary);
+  font-size: 20px;
+  letter-spacing: -.04em;
+}
+.supporting-doc-card p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #64748b;
+  word-break: keep-all;
+}
+.supporting-doc-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.ghost-inline-action {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 16px;
+  border: 1px solid rgba(51,65,85,.12);
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 900;
+}
+
+.compact-consent-list .legal-consent-item {
+  align-items: center;
+  min-height: 58px;
+}
+.compact-consent-list .legal-consent-item strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+.compact-legal-note {
+  margin: 10px 0 14px;
+  font-size: 14px;
+}
+
+.recording-link-card p {
+  margin: 0 0 16px;
+  color: #475569;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.recording-link-card p strong {
+  color: var(--primary);
+}
+.recording-state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.recording-state-grid div {
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.recording-state-grid span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 850;
+  color: #64748b;
+}
+.recording-state-grid strong {
+  color: var(--cm-teal);
+  font-weight: 900;
+}
+
+.precontract-question-card {
+  margin-top: 22px;
+  padding: 26px;
+  border-radius: 28px;
+  background: #fff;
+  border: 1px solid rgba(159, 18, 57, 0.16);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, .06);
+}
+.precontract-question-card h3 {
+  margin: 4px 0 16px;
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+.question-list {
+  display: grid;
+  gap: 12px;
+}
+.question-list p {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: #fff7f8;
+  border: 1px solid rgba(159, 18, 57, 0.14);
+  color: #4a3439;
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+/* User-level terminology: keep technical labels subdued, not dominant. */
+body.user-mode .verify-workspace-v65 .hash-line,
+body.user-mode .technical-details-v65 {
+  color: #64748b;
+}
+
+@media (max-width: 767px) {
+  body.user-mode .phone-frame {
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .field-fixed-cta {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+/* =========================================================
+   v6.8 Action-Oriented Protection UX
+   - 첫 화면 CTA/카피 강화
+   - 버튼처럼 보이는 비버튼 제거
+   - 계약 전 확인 질문 우선 노출
+   - 사용자 화면 기술 용어 완화
+   ========================================================= */
+
+body.user-mode.home-screen #userStatusMini {
+  display: none !important;
+}
+
+.action-hero-screen {
+  padding-bottom: 132px !important;
+}
+
+.action-hero-title {
+  letter-spacing: -0.055em;
+  line-height: 1.13 !important;
+}
+
+.action-hero-title span {
+  display: inline-block;
+  margin-top: 7px;
+  color: var(--primary, #17365d);
+  font-weight: 950;
+  text-decoration: underline;
+  text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.16em;
+  text-decoration-color: rgba(15, 118, 110, 0.32);
+}
+
+.field-hero-desc {
+  max-width: 310px;
+  line-height: 1.58 !important;
+}
+
+.action-risk-flow {
+  padding: 18px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+}
+
+.scenario-bridge {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 8px 0 9px;
+  color: #64748b;
+  text-align: center;
+}
+
+.scenario-bridge span {
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #9f1239;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.scenario-bridge em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #475569;
+}
+
+.visual-risk .scenario-risk-chip {
+  width: fit-content;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(159, 18, 57, 0.10);
+  color: #9f1239;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+body.user-mode.home-screen .field-fixed-cta {
+  position: sticky;
+  bottom: 0;
+  margin-top: 18px;
+  padding-top: 14px;
+  padding-bottom: 4px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.98) 34%, #fff 100%);
+  z-index: 10;
+}
+
+.priority-question-card {
+  border: 1px solid rgba(159, 18, 57, 0.18) !important;
+  background: linear-gradient(135deg, rgba(159, 18, 57, 0.055), #fff 58%) !important;
+  box-shadow: 0 18px 42px rgba(159, 18, 57, 0.08);
+}
+
+.priority-question-card .screen-kicker {
+  color: #9f1239;
+}
+
+.priority-question-card h3 {
+  font-size: 24px !important;
+  color: #17365d;
+  margin-bottom: 14px !important;
+}
+
+.priority-question-card .question-list p {
+  position: relative;
+  padding-left: 18px;
+  font-weight: 750;
+  line-height: 1.65;
+}
+
+.priority-question-card .question-list p::before {
+  content: "Q";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  color: #9f1239;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+/* 사용자 화면에서는 기술 용어보다 쓸모가 먼저 보이도록 여백과 위계 정리 */
+.verify-card-hero p,
+.verify-meaning-card p,
+.addendum-main-card .screen-desc,
+.lock-contract-screen .screen-desc {
+  word-break: keep-all;
+}
+
+.verify-actions-v65 .big-action,
+.post-analysis-actions .big-action {
+  order: -1;
+}
+
+.verify-actions-v65 .secondary-action,
+.post-analysis-actions .secondary-action {
+  font-weight: 800;
+}
+
+/* 녹취 화면: 계약서 연결 상태를 더 강하게 */
+.recording-link-card {
+  border-color: rgba(15, 118, 110, 0.2) !important;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.065), #fff 65%) !important;
+}
+
+.recording-link-card h3::before {
+  content: "●";
+  margin-right: 7px;
+  color: #0f766e;
+}
+
+/* Judge는 요약 카드가 먼저, 로그는 보조 */
+body.judge-mode .judge-kpi-card {
+  padding: 22px !important;
+}
+
+body.judge-mode .raw-log-box,
+body.judge-mode .judge-log-details {
+  opacity: 0.86;
+}
+
+@media (max-width: 767px) {
+  .action-hero-screen {
+    padding-bottom: 118px !important;
+  }
+
+  .priority-question-card h3 {
+    font-size: 21px !important;
+  }
+}
+
+
+/* ===============================
+   v6.9 Protection Flow Polish
+   사용자 행동 중심 UX, 1 primary rule, 녹취 신원 시각화
+   =============================== */
+:root {
+  --cm-v69-navy: #0f2742;
+  --cm-v69-ink: #10263d;
+  --cm-v69-muted: #64748b;
+  --cm-v69-soft: #f8fafc;
+  --cm-v69-danger: #9f1239;
+  --cm-v69-teal: #0f766e;
+  --cm-v69-amber: #b45309;
+}
+
+/* 상단 오른쪽 시작/상태가 첫 화면에서 중복 CTA처럼 보이지 않도록 제거 */
+body.user-mode.home-screen #userStatusMini { display: none !important; }
+body.user-mode.home-screen .phone-status-bar { justify-content: flex-start !important; }
+body.user-mode #judgeLink { display: none !important; }
+
+/* 한 화면의 핵심 행동은 하나만 강하게 */
+.one-primary-actions .big-action { order: 1; }
+.one-primary-actions .secondary-action { order: 2; }
+.one-primary-actions .ghost-inline-action { order: 3; }
+.ghost-inline-action {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+}
+.ghost-inline-action:hover { color: var(--cm-v69-ink); text-decoration: underline; }
+.ghost-inline-action.danger-link { color: #9f1239; }
+
+.v69-home-screen { padding-bottom: 104px !important; }
+.v69-hero-title {
+  font-size: clamp(26px, 7vw, 36px) !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.06em;
+}
+.v69-hero-desc {
+  font-size: 16px !important;
+  line-height: 1.55 !important;
+  color: #475569;
+  margin-top: 14px !important;
+}
+.v69-risk-flow {
+  padding: 20px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 16px 34px rgba(15, 39, 66, 0.08) !important;
+}
+.v69-risk-flow .scenario-quote {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px;
+}
+.v69-bridge {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+  color: #64748b;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.v69-bridge span { font-size: 18px; font-weight: 900; }
+.v69-bridge em { font-style: normal; font-size: 13px; font-weight: 800; }
+.scenario-risk-label {
+  display: inline-flex;
+  margin-top: 14px;
+  color: var(--cm-v69-danger);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.v69-fixed-cta {
+  position: sticky;
+  bottom: 0;
+  z-index: 8;
+  margin: 18px -4px 0;
+  padding: 14px 4px 4px;
+  background: linear-gradient(to top, rgba(255,255,255,.98) 78%, rgba(255,255,255,0));
+}
+.v69-fixed-cta .big-action {
+  min-height: 56px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.v69-flow-guide { margin-bottom: 18px; }
+
+/* 문서/추가자료 화면 압축 */
+.v69-document-card .info-row span:last-child { font-weight: 800; color: #10263d; }
+.v69-additional-card { padding: 22px !important; }
+.v69-additional-card h3 { margin: 4px 0 8px; font-size: 22px; }
+.v69-additional-card p { margin: 0; line-height: 1.55; color: #64748b; }
+.role-wait-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+.role-wait-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.role-wait-list span { color: #64748b; font-size: 13px; font-weight: 800; }
+.role-wait-list strong { color: #b45309; }
+
+/* 녹취 신원 시각화 */
+.identity-recording-strip {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0;
+}
+.identity-person {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #dbe5ef;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+.identity-person span {
+  display: block;
+  font-size: 11px;
+  font-weight: 900;
+  color: #64748b;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+.identity-person strong {
+  display: block;
+  font-size: 18px;
+  color: #10263d;
+  line-height: 1.2;
+}
+.identity-person em {
+  display: block;
+  margin-top: 5px;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--cm-v69-teal);
+  font-weight: 900;
+}
+.identity-link-line {
+  width: 18px;
+  height: 2px;
+  background: #94a3b8;
+  border-radius: 99px;
+}
+.recording-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 52px;
+  margin: 12px 0 18px;
+}
+.recording-waveform span {
+  width: 6px;
+  border-radius: 99px;
+  background: #9f1239;
+  animation: cmWave 1.2s ease-in-out infinite;
+}
+.recording-waveform span:nth-child(1) { height: 18px; animation-delay: 0s; }
+.recording-waveform span:nth-child(2) { height: 34px; animation-delay: .08s; }
+.recording-waveform span:nth-child(3) { height: 24px; animation-delay: .16s; }
+.recording-waveform span:nth-child(4) { height: 42px; animation-delay: .24s; }
+.recording-waveform span:nth-child(5) { height: 26px; animation-delay: .32s; }
+.recording-waveform span:nth-child(6) { height: 36px; animation-delay: .4s; }
+.recording-waveform span:nth-child(7) { height: 16px; animation-delay: .48s; }
+@keyframes cmWave { 0%, 100% { transform: scaleY(.7); opacity: .55; } 50% { transform: scaleY(1.1); opacity: 1; } }
+.compact-recording-state .recording-state-grid div { padding: 12px !important; }
+
+/* 분석 화면 compact */
+.compact-processing-list .processing-card { padding: 14px 16px !important; }
+
+/* 결과 화면: 질문이 먼저 보이게 */
+.v69-question-first {
+  border: 1px solid rgba(159,18,57,.18) !important;
+  background: #fff7f8 !important;
+  box-shadow: 0 18px 38px rgba(159, 18, 57, 0.08);
+  margin-bottom: 18px;
+}
+.v69-question-first h2 {
+  margin: 4px 0 12px;
+  color: #881337;
+  font-size: clamp(22px, 4vw, 30px);
+  line-height: 1.2;
+}
+.v69-question-first .question-list p {
+  background: #ffffff;
+  border: 1px solid #f4ccd4;
+  border-radius: 16px;
+  padding: 14px 16px;
+  line-height: 1.6;
+  color: #2f2f33;
+  font-weight: 600;
+}
+.compact-evidence-hero { margin-top: 14px; }
+.v69-result-actions .big-action { width: 100%; }
+.v69-result-actions .secondary-action { width: 100%; background: #fff; }
+.v69-result-actions .ghost-inline-action { width: 100%; }
+
+/* 추가자료 화면 */
+.compact-doc-grid .post-doc-card { padding: 18px !important; }
+.compact-doc-grid .post-doc-card strong { font-size: 17px !important; }
+
+/* 검증카드: 기술보다 쓸모 먼저 */
+.v69-verify-hero h2 { line-height: 1.2; }
+.v69-verify-hero p { max-width: 620px; line-height: 1.6; }
+.wallet-ready-card {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+}
+.wallet-ready-card strong {
+  color: #0f766e;
+  font-size: 16px;
+  font-weight: 900;
+}
+.wallet-ready-card p {
+  margin: 6px 0 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+/* 버튼처럼 보이면 안 되는 정보 요소 정리 */
+.scenario-risk-chip { display: none !important; }
+.status-chip, .risk-badge {
+  box-shadow: none !important;
+}
+
+@media (max-width: 767px) {
+  .v69-hero-title { font-size: 30px !important; }
+  .identity-recording-strip { grid-template-columns: 1fr; }
+  .identity-link-line { width: 2px; height: 18px; justify-self: center; }
+  .v69-fixed-cta { position: sticky; }
+}
+
+/* =========================================================
+   v6.10 Step 6 — Final Consistency & Mobile Header Polish
+   목적: 모바일 목업 상단바가 별도 회청색 조각처럼 보이는 문제 제거
+   - 폰 외곽/노치/상단바를 같은 네이비 계열로 통일
+   - participant / user / host 화면 공통 적용
+   - judge/report/verify의 대시보드 레이아웃은 건드리지 않음
+   ========================================================= */
+:root {
+  --cm-v610-device-shell: #0f172a;
+  --cm-v610-device-shell-2: #0b1f33;
+  --cm-v610-device-notch: #050b14;
+  --cm-v610-device-text: #f8fafc;
+  --cm-v610-device-subtext: #cbd5e1;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-frame {
+  background: var(--cm-v610-device-shell) !important;
+  border-color: #334155 !important;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.26) inset !important;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-frame::before {
+  background: var(--cm-v610-device-notch) !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.34), inset 0 -1px 0 rgba(255,255,255,0.08) !important;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-status-bar {
+  background: var(--cm-v610-device-shell) !important;
+  color: var(--cm-v610-device-text) !important;
+  height: 48px !important;
+  padding: 0 20px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-status-bar span,
+body.user-mode:not(.judge-mode):not(.judge-dashboard) #deviceLabel,
+body.user-mode:not(.judge-mode):not(.judge-dashboard) #userStatusMini {
+  color: var(--cm-v610-device-text) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.03em !important;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) #userStatusMini {
+  color: var(--cm-v610-device-subtext) !important;
+}
+
+/* 상단바 아래 흰 본문 카드가 더 자연스럽게 이어지도록 여백 보정 */
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-screen {
+  border-radius: 30px 30px 26px 26px !important;
+  background: #fbfaf7 !important;
+}
+
+body.user-mode:not(.judge-mode):not(.judge-dashboard) .phone-screen > .screen-card:first-child {
+  margin-top: 10px !important;
+}
+
+/* 첫 화면은 상단 보조 상태를 계속 숨겨 Primary CTA 하나만 남김 */
+body.user-mode.home-screen #userStatusMini {
+  display: none !important;
+}
+body.user-mode.home-screen .phone-status-bar {
+  justify-content: flex-start !important;
+}
+
+/* report / verify / judge에서는 모바일 기기 헤더 보정이 침범하지 않도록 방어 */
+body.evidence-screen .phone-status-bar,
+body.judge-mode .phone-status-bar,
+body.judge-dashboard .phone-status-bar {
+  display: none !important;
+}
+
+
+
+/* =========================================================
+   v6.11 Report & Vault Interaction Polish
+   - /report를 사후 검토용 문서형 워크스페이스로 정리
+   - 질문별 개별 복사 액션
+   - 검증 카드 보관함 바텀시트
+   ========================================================= */
+body.report-screen.user-mode .main-stage,
+body.verify-screen.user-mode .main-stage {
+  padding-top: 8px;
+}
+
+body.report-screen.user-mode .phone-frame,
+body.verify-screen.user-mode .phone-frame {
+  width: 100% !important;
+  max-width: min(1360px, calc(100vw - 48px)) !important;
+}
+
+.report-workspace-v611 {
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 22px;
+}
+
+.report-header-v611 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 30px;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.06);
+}
+
+.report-header-v611 h2 {
+  margin: 6px 0 10px;
+  color: var(--primary, #17365d);
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.14;
+  letter-spacing: -0.055em;
+  font-weight: 950;
+}
+
+.report-header-v611 p {
+  margin: 0;
+  max-width: 620px;
+  color: #5f6f82;
+  line-height: 1.62;
+  font-weight: 520;
+  word-break: keep-all;
+}
+
+.report-meta-v611 {
+  display: grid;
+  gap: 7px;
+  justify-items: end;
+  min-width: 250px;
+}
+
+.report-meta-v611 span {
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #17365d;
+  font-weight: 900;
+}
+
+.report-meta-v611 strong {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.report-grid-v611 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.report-main-v611 { min-width: 0; display: grid; gap: 18px; }
+.report-action-panel-v611 { min-width: 0; }
+
+.v611-question-panel {
+  margin-top: 0 !important;
+  padding: 26px !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(159, 18, 57, 0.16) !important;
+}
+
+.v611-question-panel h3 {
+  margin: 5px 0 6px !important;
+  color: #17365d !important;
+  font-size: clamp(24px, 3vw, 32px) !important;
+  line-height: 1.18;
+}
+
+.question-help-v611 {
+  margin: 0 0 16px;
+  color: #64748b;
+  line-height: 1.55;
+  font-weight: 650;
+}
+
+.question-card-list-v611 {
+  display: grid;
+  gap: 12px;
+}
+
+.question-card-v611 {
+  position: relative;
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.035);
+}
+
+.question-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.question-card-top > span {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.question-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 56px;
+  min-height: 36px;
+  border: 1px solid #dbe3ed;
+  border-radius: 999px;
+  background: #fff;
+  color: #17365d;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.question-copy-button em {
+  font-style: normal;
+  font-size: 12px;
+}
+
+.question-card-v611 p {
+  margin: 0;
+  color: #24364d;
+  line-height: 1.66;
+  font-weight: 650;
+  word-break: keep-all;
+}
+
+.question-card-v611 small {
+  display: block;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.v611-evidence-hero {
+  border: 1px solid rgba(159, 18, 57, 0.13);
+}
+
+.action-sequence-card-v611 h3 {
+  margin-bottom: 10px;
+}
+
+.action-sequence-list-v611 {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.action-sequence-list-v611 li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.action-sequence-list-v611 span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #17365d;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.action-sequence-list-v611 strong {
+  color: #17365d;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 900;
+}
+
+.v611-result-actions .big-action,
+.v611-verify-actions .big-action {
+  width: 100%;
+}
+
+.v611-result-actions .secondary-action,
+.v611-verify-actions .secondary-action {
+  width: 100%;
+  background: #ffffff;
+}
+
+.v611-result-actions .ghost-inline-action,
+.v611-verify-actions .ghost-inline-action {
+  width: 100%;
+  text-align: center;
+}
+
+.v611-vault-summary-card .verify-row span {
+  font-weight: 850;
+}
+
+.vault-ready-card-v611 {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+}
+
+.vault-ready-card-v611 strong {
+  color: #0f766e;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.vault-ready-card-v611 p {
+  margin: 6px 0 0;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.cm-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 120;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: #10263d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.26);
+  white-space: nowrap;
+}
+
+.vault-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.34);
+  backdrop-filter: blur(5px);
+}
+
+.vault-sheet {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 110;
+  width: min(560px, calc(100vw - 32px));
+  padding: 24px;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.32);
+}
+
+.vault-sheet-head {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.vault-sheet-head strong {
+  display: block;
+  color: #17365d;
+  font-size: 20px;
+  line-height: 1.28;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.vault-sheet-head p {
+  margin: 7px 0 0;
+  color: #64748b;
+  line-height: 1.58;
+  word-break: keep-all;
+}
+
+.vault-spinner {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 4px solid #dbeafe;
+  border-top-color: #0f766e;
+  animation: vaultSpin 0.9s linear infinite;
+}
+
+.vault-complete-mark {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 950;
+  font-size: 22px;
+}
+
+@keyframes vaultSpin { to { transform: rotate(360deg); } }
+
+.vault-progress-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 850;
+}
+
+.vault-progress-list .done { color: #0f766e; }
+.vault-progress-list .active { color: #17365d; }
+
+.vault-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.vault-summary-grid div {
+  padding: 13px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.vault-summary-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+  margin-bottom: 5px;
+}
+
+.vault-summary-grid strong {
+  color: #17365d;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.vault-sheet-actions {
+  display: grid;
+  gap: 10px;
+}
+
+body.judge-mode .judge-kpi-card:nth-child(4) .judge-kpi-value::after {
+  content: "";
+}
+
+@media (max-width: 900px) {
+  .report-header-v611 { align-items: flex-start; flex-direction: column; }
+  .report-meta-v611 { justify-items: start; min-width: 0; }
+  .report-grid-v611 { grid-template-columns: 1fr; }
+  .report-action-panel-v611 .sticky-card { position: static; }
+  .vault-summary-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 767px) {
+  .report-workspace-v611 { gap: 14px; }
+  .report-header-v611 { padding: 22px; border-radius: 24px; }
+  .v611-question-panel { padding: 20px !important; }
+  .question-card-v611 { padding: 16px; }
+  .question-copy-button em { display: none; }
+  .vault-sheet { bottom: 12px; padding: 20px; border-radius: 24px; }
+}
+
+
+/* ==================================================
+   v6.12 Simplified Core Flow + Shell Separation
+   - /report, /verify, /addendum are PC/tablet workspaces
+   - phone frame is only for / and /participant/* mobile field flow
+   ================================================== */
+
+body.workspace-screen .mobile-demo-label,
+body.evidence-screen .mobile-demo-label {
+  display: none !important;
+}
+
+body.workspace-screen .main-stage,
+body.evidence-screen .main-stage {
+  width: min(100%, 1500px) !important;
+  max-width: 1500px !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+body.workspace-screen .phone-frame,
+body.evidence-screen .phone-frame {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+body.workspace-screen .phone-status-bar,
+body.evidence-screen .phone-status-bar,
+body.workspace-screen .phone-notch,
+body.evidence-screen .phone-notch,
+body.workspace-screen .mobile-notch,
+body.evidence-screen .mobile-notch,
+body.workspace-screen .device-notch,
+body.evidence-screen .device-notch,
+body.workspace-screen .notch,
+body.evidence-screen .notch {
+  display: none !important;
+}
+
+body.workspace-screen .phone-screen,
+body.evidence-screen .phone-screen {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+body.workspace-screen .screen-card.workspace-card,
+body.evidence-screen .screen-card.workspace-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.report-workspace-v612,
+.addendum-workspace-v612,
+.verify-workspace-v612 {
+  width: min(100%, 1360px);
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  box-sizing: border-box;
+}
+
+.report-header-v612 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 22px;
+  padding: 28px;
+  border-radius: 30px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.report-header-v612 h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  color: #17365d;
+}
+
+.report-header-v612 p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 750;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.report-grid-v612,
+.addendum-grid-v612,
+.verify-workspace-v612 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+}
+
+.verify-workspace-v612 {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.report-main-v612,
+.addendum-main-card,
+.verify-audit-main {
+  min-width: 0;
+}
+
+.report-action-panel-v612,
+.addendum-side-card,
+.verify-qr-column {
+  width: 100%;
+  max-width: 360px;
+  position: sticky;
+  top: 24px;
+  align-self: start;
+}
+
+.primary-risk-hero-v612 {
+  padding: 24px;
+  margin-bottom: 20px;
+  border-radius: 28px;
+  background: #fff7f7;
+  border: 1px solid rgba(159, 18, 57, 0.16);
+}
+
+.primary-risk-hero-v612 h3 {
+  margin: 12px 0 10px;
+  color: #17365d;
+  font-size: 28px;
+  line-height: 1.22;
+  letter-spacing: -0.04em;
+}
+
+.primary-risk-hero-v612 p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.risk-hero-meta-v612 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.risk-hero-meta-v612 span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(159, 18, 57, 0.12);
+  color: #9f1239;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.v612-question-panel {
+  margin-bottom: 20px;
+  padding: 24px !important;
+}
+
+.v612-question-panel h3 {
+  margin-bottom: 16px;
+}
+
+.v612-question-list {
+  gap: 12px;
+}
+
+.report-section-title-v612 {
+  margin: 22px 0 12px;
+}
+
+.report-section-title-v612 h3 {
+  margin: 6px 0 0;
+  color: #17365d;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.action-sequence-card-v612 {
+  padding: 22px !important;
+}
+
+.v612-result-actions {
+  gap: 12px;
+}
+
+.v612-doc-grid {
+  margin-top: 0;
+}
+
+body.report-screen .phone-frame::before,
+body.verify-screen .phone-frame::before,
+body.addendum-screen .phone-frame::before,
+body.report-screen .phone-frame::after,
+body.verify-screen .phone-frame::after,
+body.addendum-screen .phone-frame::after,
+body.report-screen .phone-screen::before,
+body.verify-screen .phone-screen::before,
+body.addendum-screen .phone-screen::before,
+body.report-screen .phone-screen::after,
+body.verify-screen .phone-screen::after,
+body.addendum-screen .phone-screen::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Mobile flow simplification */
+.v612-home-screen .home-flow-guide,
+.v612-home-screen .flow-guide-item {
+  display: none !important;
+}
+
+.v612-hero-title {
+  font-size: 38px !important;
+  line-height: 1.17 !important;
+}
+
+.v612-hero-desc {
+  margin-bottom: 18px !important;
+}
+
+.v612-risk-flow {
+  padding: 18px !important;
+  margin-bottom: 96px !important;
+}
+
+.v612-fixed-cta {
+  background: linear-gradient(180deg, rgba(248,250,252,0), rgba(248,250,252,0.92) 22%, rgba(248,250,252,0.98));
+  padding-top: 28px !important;
+}
+
+.subtle-join-link {
+  font-size: 13px !important;
+  opacity: 0.72;
+}
+
+.single-upload-card {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.upload-alt-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.v612-optional-docs {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.v612-optional-docs strong {
+  display: block;
+  color: #17365d;
+  margin-bottom: 5px;
+}
+
+.v612-optional-docs span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.v612-optional-docs button {
+  margin-top: 8px;
+}
+
+.invite-code-card-v612 {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 24px;
+  text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.invite-code-card-v612 span,
+.invite-code-card-v612 em {
+  display: block;
+  color: #64748b;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.invite-code-card-v612 strong {
+  display: block;
+  margin: 8px 0;
+  color: #17365d;
+  font-size: 38px;
+  letter-spacing: 0.12em;
+  font-weight: 950;
+}
+
+.compact-role-wait {
+  margin-top: 14px;
+}
+
+.recording-proof-chips {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 96px;
+}
+
+.recording-proof-chips span {
+  display: block;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #0f766e;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.recording-proof-chips .active {
+  color: #9f1239;
+  background: #fff1f2;
+}
+
+.verify-hero-stamp strong {
+  font-size: 18px !important;
+  line-height: 1.1;
+}
+
+@media (max-width: 980px) {
+  .report-workspace-v612,
+  .addendum-workspace-v612,
+  .verify-workspace-v612 {
+    padding: 20px 16px 56px;
+  }
+
+  .report-header-v612 {
+    flex-direction: column;
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .report-grid-v612,
+  .addendum-grid-v612,
+  .verify-workspace-v612 {
+    grid-template-columns: 1fr;
+  }
+
+  .report-action-panel-v612,
+  .addendum-side-card,
+  .verify-qr-column {
+    max-width: none;
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .v612-hero-title {
+    font-size: 32px !important;
+  }
+
+  .report-header-v612 h2 {
+    font-size: 32px;
+  }
+}
+
+
+/* v6.12.1 hotfix: cache bust + workspace stability */
+.report-action-panel-v612,
+.addendum-side-card,
+.verify-qr-column {
+  position: static;
+  max-width: 340px;
+}
+
+.report-side-card-v612 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.next-step-stack-v612 {
+  display: grid;
+  gap: 10px;
+}
+
+.next-step-item-v612 {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.next-step-item-v612 > span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #17365d;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.next-step-item-v612 strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #17365d;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 900;
+}
+
+.next-step-item-v612 em {
+  display: block;
+  color: #64748b;
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.report-side-actions-v612 {
+  margin-top: 2px;
+  display: grid;
+  gap: 12px;
+}
+
+.report-side-actions-v612 .big-action,
+.report-side-actions-v612 .secondary-action,
+.report-side-actions-v612 .ghost-inline-action {
+  width: 100%;
+}
+
+.verify-card-hero.no-stamp-v612 {
+  grid-template-columns: 1fr;
+}
+
+.verify-inline-summary-v612 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.verify-inline-summary-v612 span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f0fdfa;
+  border: 1px solid rgba(15,118,110,.14);
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.verify-side-v65 .qr-caption {
+  margin-top: 10px;
+}
+
+@media (max-width: 1200px) {
+  .report-grid-v612,
+  .addendum-grid-v612,
+  .verify-workspace-v612 {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 980px) {
+  .report-grid-v612,
+  .addendum-grid-v612,
+  .verify-workspace-v612 {
+    grid-template-columns: 1fr;
+  }
+
+  .report-action-panel-v612,
+  .addendum-side-card,
+  .verify-qr-column {
+    max-width: none;
+  }
+}
+
+
+/* =========================================================
+   v6.12.2 Final Shell Cleanup
+   목적: /report, /verify, /addendum에서 모바일 폰 상단바/검은 띠 잔재를 완전히 제거한다.
+   백엔드 연결을 건드리지 않고 shell 스타일만 정리한다.
+   ========================================================= */
+body.user-mode.workspace-screen .main-stage,
+body.user-mode.evidence-screen .main-stage,
+body.user-mode.report-screen .main-stage,
+body.user-mode.verify-screen .main-stage,
+body.user-mode.addendum-screen .main-stage {
+  width: min(100%, 1480px) !important;
+  max-width: 1480px !important;
+  display: block !important;
+  padding: 0 24px 72px !important;
+  margin: 0 auto !important;
+}
+
+body.user-mode.workspace-screen .phone-frame,
+body.user-mode.evidence-screen .phone-frame,
+body.user-mode.report-screen .phone-frame,
+body.user-mode.verify-screen .phone-frame,
+body.user-mode.addendum-screen .phone-frame,
+body.user-mode.workspace-screen .phone-frame.workspace-frame-reset {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+body.user-mode.workspace-screen .phone-frame::before,
+body.user-mode.evidence-screen .phone-frame::before,
+body.user-mode.report-screen .phone-frame::before,
+body.user-mode.verify-screen .phone-frame::before,
+body.user-mode.addendum-screen .phone-frame::before,
+body.user-mode.workspace-screen .phone-frame::after,
+body.user-mode.evidence-screen .phone-frame::after,
+body.user-mode.report-screen .phone-frame::after,
+body.user-mode.verify-screen .phone-frame::after,
+body.user-mode.addendum-screen .phone-frame::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.user-mode.workspace-screen .phone-status-bar,
+body.user-mode.evidence-screen .phone-status-bar,
+body.user-mode.report-screen .phone-status-bar,
+body.user-mode.verify-screen .phone-status-bar,
+body.user-mode.addendum-screen .phone-status-bar,
+body.user-mode.workspace-screen #deviceLabel,
+body.user-mode.workspace-screen #userStatusMini,
+body.user-mode.report-screen #deviceLabel,
+body.user-mode.report-screen #userStatusMini,
+body.user-mode.verify-screen #deviceLabel,
+body.user-mode.verify-screen #userStatusMini,
+body.user-mode.addendum-screen #deviceLabel,
+body.user-mode.addendum-screen #userStatusMini {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+body.user-mode.workspace-screen .phone-screen,
+body.user-mode.evidence-screen .phone-screen,
+body.user-mode.report-screen .phone-screen,
+body.user-mode.verify-screen .phone-screen,
+body.user-mode.addendum-screen .phone-screen {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  max-height: none !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+body.user-mode.workspace-screen .screen-card.workspace-card,
+body.user-mode.evidence-screen .screen-card.workspace-card,
+body.user-mode.report-screen .screen-card,
+body.user-mode.verify-screen .screen-card,
+body.user-mode.addendum-screen .screen-card {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* 사후 검토 화면은 문서형 워크스페이스로 시작한다. 네이비 앱바 대신 흰 리포트 헤더를 첫 카드로 사용한다. */
+.report-workspace-v612,
+.addendum-workspace-v612,
+.verify-workspace-v612 {
+  width: min(100%, 1360px) !important;
+  margin: 0 auto !important;
+  padding: 28px 0 80px !important;
+}
+
+/* 오른쪽 패널은 고정/겹침 없이 일반 사이드 카드로만 보이게 한다. */
+.report-action-panel-v612,
+.addendum-side-card,
+.verify-qr-column {
+  position: static !important;
+  top: auto !important;
+  align-self: start !important;
+}
+
+@media (max-width: 980px) {
+  body.user-mode.workspace-screen .main-stage,
+  body.user-mode.evidence-screen .main-stage,
+  body.user-mode.report-screen .main-stage,
+  body.user-mode.verify-screen .main-stage,
+  body.user-mode.addendum-screen .main-stage {
+    padding: 0 16px 56px !important;
+  }
+
+  .report-workspace-v612,
+  .addendum-workspace-v612,
+  .verify-workspace-v612 {
+    padding-top: 18px !important;
+  }
+}

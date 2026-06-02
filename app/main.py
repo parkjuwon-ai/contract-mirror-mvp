@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-app = FastAPI(title="Contract Mirror UI v6.5")
+app = FastAPI(title="Contract Mirror UI v6.12.2.2")
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
@@ -51,6 +51,11 @@ def report_detail(request: Request, session_id: str):
 @app.get("/verify/{report_id}", response_class=HTMLResponse)
 def verify_report(request: Request, report_id: str):
     return render(request, step="verify", mode="user")
+
+
+@app.get("/addendum/{session_id}", response_class=HTMLResponse)
+def addendum_detail(request: Request, session_id: str):
+    return render(request, step="addendum", mode="user")
 
 
 # 이전 버전 URL fallback: 기존 주소로 접속해도 새 UI가 뜨도록 유지
