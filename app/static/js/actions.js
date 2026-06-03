@@ -165,7 +165,7 @@ async function handleAction(e) {
     },
     "toggle-contract-record": () => { state.contractRecordOpen = !state.contractRecordOpen; render(); },
     "start-recording": () => { if (readyToRecord()) { addEvent("RECORDING_STARTED", "all_identity_and_consent_completed=true"); state.recording = true; goTo(NAVIGATION_TARGETS.RECORDING); } },
-    "stop-recording": () => { addEvent("RECORDING_HASH_CREATED", `recording_hash=${state.recordingHash}, duration=03:20`); state.recording = false; goTo(NAVIGATION_TARGETS.PROCESSING); },
+    "stop-recording": () => handleStopRecordingAction(),
     "open-trust": () => openTrust(),
     "reset-consents": () => { resetConsentState(); addEvent("SESSION_RESET", "consent_status=reset"); goTo(NAVIGATION_TARGETS.WAITING); }
   };
