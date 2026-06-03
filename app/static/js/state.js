@@ -53,6 +53,58 @@ function normalizeSavedState(savedState) {
   return defaults;
 }
 
+
+function getApiContractType() {
+  if (state.contractType === "부동산 분양") return "real_estate_sale";
+  return state.contractType || "real_estate_sale";
+}
+
+function applyServiceSession(session) {
+  if (!session || typeof session !== "object") return;
+
+  state.serviceSession = deepClone(session);
+
+  if (session.id) {
+    state.sessionId = session.id;
+  }
+
+  if (session.contract && typeof session.contract === "object") {
+    if (session.contract.fileName) state.contractFile = session.contract.fileName;
+    if (session.contract.hash) state.contractHash = session.contract.hash;
+  }
+
+  if (session.recording && typeof session.recording === "object") {
+    if (session.recording.hash) state.recordingHash = session.recording.hash;
+  }
+
+  if (session.participants && typeof session.participants === "object") {
+    ["contractor", "explainer"].forEach((role) => {
+      const participant = session.participants[role];
+      if (!participant || typeof participant !== "object") return;
+
+      state[role] = {
+        ...state[role],
+        verified: Boolean(participant.verified),
+        consent: Boolean(participant.consent),
+        rejected: Boolean(participant.rejected),
+        name: participant.name || state[role].name
+      };
+    });
+  }
+
+  if (session.report && typeof session.report === "object") {
+    if (session.report.id) state.reportId = session.report.id;
+    if (session.report.hash) state.reportHash = session.report.hash;
+    state.serviceReport = deepClone(session.report);
+  }
+
+  if (session.verification && typeof session.verification === "object") {
+    if (session.verification.id) state.verificationId = session.verification.id;
+    state.serviceVerification = deepClone(session.verification);
+  }
+}
+
+
 function createPersistedSnapshot() {
   const snapshot = {};
   PERSISTED_STATE_KEYS.forEach((key) => {
