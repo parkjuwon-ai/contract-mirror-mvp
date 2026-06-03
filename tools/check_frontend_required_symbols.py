@@ -5,6 +5,7 @@ JS_FILES = [
     Path("app/static/js/constants.js"),
     Path("app/static/js/state.js"),
     Path("app/static/js/apiClient.js"),
+    Path("app/static/js/actions.js"),
     Path("app/static/js/app.js"),
 ]
 

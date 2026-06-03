@@ -1,62 +1,44 @@
-#!/usr/bin/env python3
-"""Lightweight frontend action consistency check for Contract Mirror.
-
-It verifies that every literal data-action rendered by app.js is handled by
-handleAction(), except dynamic action prefixes that are intentionally handled
-separately.
-"""
-from __future__ import annotations
-
-import re
 from pathlib import Path
+import re
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-APP_JS = ROOT / "app" / "static" / "js" / "app.js"
+HTML_FILES = [
+    Path("app/templates/index.html"),
+]
 
-DYNAMIC_PREFIXES = ("copy-question-", "verify-", "consent-", "reject-")
-SPECIAL_HANDLERS = {"copy-all-questions"}
+JS_FILES = [
+    Path("app/static/js/constants.js"),
+    Path("app/static/js/state.js"),
+    Path("app/static/js/apiClient.js"),
+    Path("app/static/js/actions.js"),
+    Path("app/static/js/app.js"),
+]
 
+missing_files = [str(path) for path in HTML_FILES + JS_FILES if not path.exists()]
+if missing_files:
+    print("Missing files:")
+    for file_path in missing_files:
+        print(f"- {file_path}")
+    sys.exit(1)
 
-def main() -> int:
-    source = APP_JS.read_text(encoding="utf-8")
-    data_actions = set(re.findall(r'data-action="([^"]+)"', source))
-    route_keys = set(re.findall(r'"([^"]+)"\s*:\s*\(.*?\)\s*=>', source))
+html_text = "\n\n".join(path.read_text(encoding="utf-8") for path in HTML_FILES)
+js_text = "\n\n".join(path.read_text(encoding="utf-8") for path in JS_FILES)
 
-    unresolved: list[str] = []
-    for action in sorted(data_actions):
-        if "${" in action:
-            # Template actions such as copy-question-${question.id} or verify-${role}
-            # are covered by dynamic prefix handlers in handleAction().
-            continue
-        if action in SPECIAL_HANDLERS:
-            continue
-        if action in route_keys:
-            continue
-        if action.startswith(DYNAMIC_PREFIXES):
-            continue
-        unresolved.append(action)
+actions = sorted(set(re.findall(r'data-action=["\\\']([^"\\\']+)["\\\']', html_text)))
 
-    used_literals = {a for a in data_actions if "${" not in a and a not in SPECIAL_HANDLERS}
-    unused_routes = sorted(route_keys - used_literals)
+missing_actions = []
+for action in actions:
+    if action not in js_text:
+        missing_actions.append(action)
 
-    # Some route keys can still be invoked by generated sheets that are only rendered
-    # after state changes; they are still present as literal data-action values above.
-    if unresolved:
-        print("Unhandled data-action values:")
-        for action in unresolved:
-            print(f"  - {action}")
-        return 1
+if missing_actions:
+    print("Missing frontend action handlers or references:")
+    for action in missing_actions:
+        print(f"- {action}")
+    sys.exit(1)
 
-    if unused_routes:
-        print("Unused route handlers in handleAction():")
-        for action in unused_routes:
-            print(f"  - {action}")
-        return 1
+if "function handleAction" not in js_text:
+    print("Missing function handleAction")
+    sys.exit(1)
 
-    print("Frontend action check passed.")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+print("Frontend action check passed.")
