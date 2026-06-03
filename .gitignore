@@ -1,15 +1,27 @@
-_backups/
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# local backups
-_backups/
-app_backup_before_ui_fix/
-
-# python
-__pycache__/
-*.pyc
+# Virtual environments
 .venv/
 venv/
+env/
 
-# mac
+# OS / editor
 .DS_Store
+.vscode/
+.idea/
+
+# Local archives / backups
+_archive/
+_backups/
+app_backup_before_ui_fix/
+v14_build/
+contract-mirror-mvp/
+
+# Runtime / generated files
+*.log

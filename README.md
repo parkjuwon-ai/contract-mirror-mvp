@@ -1,84 +1,95 @@
-# Contract Mirror UI Prototype
+# Contract Mirror MVP
 
-계약미러 MVP의 UI/UX 흐름을 HTML/CSS/JavaScript로 구현한 정적 프론트 프로토타입입니다.
-FastAPI 프로젝트에 바로 붙일 수 있도록 `app/templates`, `app/static` 구조로 구성했습니다.
+계약미러는 계약 현장에서 녹취 발언과 계약서 조항을 비교해 **불일치 후보**, **확인 질문**, **검증 가능한 리포트**를 보여주는 해커톤용 MVP입니다.
 
-## 포함된 화면
+현재 버전은 `v34-route-render-bugfix`입니다. v31 화면 이동 안정화 기준 위에서 상태 기본값, 저장/복원, 초기화 책임을 정리해 localStorage와 화면 상태 꼬임을 줄였습니다.
 
-- 시작 화면
-- 계약 설명방 만들기
-- 초대번호 / QR 화면
-- 초대받은 사람 입장 화면
-- 역할 확인 화면
-- 모바일 신분증 Mock 본인확인 화면
-- 녹취·AI 분석·검증 기록 동의 화면
-- 동의 영수증 화면
-- 양쪽 본인확인/동의 대기실
-- 실패 시나리오 화면
-- 녹취 시작/진행/종료 화면
-- 계약서 업로드 화면
-- AI 분석 중 화면
-- AI 분석 결과 3단 비교 화면
-- AI 면책 확인 화면
-- 리포트 완료 화면
-- QR 검증 화면
-- 심사위원용 신뢰 로그 패널
-
-## 실행 방법
+## 빠른 실행
 
 ```bash
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-브라우저에서 아래 주소로 접속합니다.
+브라우저에서 확인합니다.
 
 ```text
 http://127.0.0.1:8000
 ```
 
-## 기존 GitHub 저장소에 넣는 방법
+## 주요 URL
 
-기존 저장소 루트에서 압축을 풀고 아래 파일을 추가/교체하세요.
+| URL | 용도 |
+|---|---|
+| `/` | 일반 사용자 시작 화면 |
+| `/judge` | 심사위원/발표자용 검증 화면 |
+| `/participant/contractor` | 계약자 모바일 입장 화면 |
+| `/participant/explainer` | 설명자 모바일 입장 화면 |
+| `/report/demo` | 리포트 화면 |
+| `/verify/demo` | QR 검증 화면 |
+| `/health` | 서버 상태 확인 |
+
+
+## 안정화 기준 문서
+
+| 문서 | 용도 |
+|---|---|
+| `docs/FLOW_LOCK.md` | 발표용 핵심 플로우, 화면 목록, 버튼 이동 경로 고정 |
+| `tools/check_frontend_actions.py` | 화면에 노출된 `data-action`과 JS 핸들러 누락 여부 점검 |
+| `docs/STATE_LOCK.md` | v32 기준 기본 상태, 저장 상태, 초기화 원칙 고정 |
+
+## 현재 파일 구조
 
 ```text
-app/main.py
-app/templates/index.html
-app/static/css/styles.css
-app/static/js/app.js
-requirements.txt
+app/
+  main.py                  # FastAPI 라우팅/부트 상태 주입
+  templates/index.html      # 단일 화면 템플릿
+  static/css/legacy-ui.css  # 기존 누적 UI 스타일, 가급적 수정 금지
+  static/css/style.css      # 현재 최종 override CSS, 급한 UI 수정은 여기서만
+  static/js/app.js          # 데모 상태/화면 렌더링/화면 이동 로직
+
+docs/
+  DEVELOPMENT_RULES.md      # 앞으로 수정할 때 지킬 기준
+  PROJECT_STRUCTURE.md      # 코드 구조 설명
+  history/                  # 과거 패치/가이드 기록
+
+tools/
+  apply_v18_cleanup_local.sh
+  health_check.sh
 ```
 
-그 다음 커밋합니다.
+## 수정 원칙
+
+1. **급한 UI 수정은 `app/static/css/style.css` 하단에서만 합니다.**  
+   `legacy-ui.css`는 과거 스타일이 누적된 기반 파일이라, 여기저기 수정하면 다시 꼬일 가능성이 큽니다.
+
+2. **HTML 구조는 최대한 유지합니다.**  
+   현재 JS가 `#screen`, `.phone-frame`, `.phone-screen`, `#trustPanel`, `#controlPanel`에 의존합니다.
+
+3. **화면 이동은 `goTo(step)` 중심으로 처리합니다.**  
+   버튼 핸들러에서 직접 `state.step`을 바꾸지 않고, `goTo()`가 타이머 정리·렌더링·스크롤 초기화를 맡도록 유지합니다.
+
+4. **상태 기본값은 `BASE_STATE`와 `normalizeSavedState()`를 기준으로 관리합니다.**  
+   localStorage에 저장할 값은 `PERSISTED_STATE_KEYS`에 포함된 값으로 제한하고, 토스트·모달·타이머 같은 임시 UI 상태는 저장하지 않습니다.
+
+4. **로컬 중복 폴더는 삭제하지 말고 `_archive/`로 보관 이동합니다.**  
+   아래 명령을 사용하세요.
 
 ```bash
-git add app/main.py app/templates/index.html app/static/css/styles.css app/static/js/app.js requirements.txt README.md docs/ui_integration_guide.md
-git commit -m "Add Contract Mirror UI prototype"
-git push origin main
+bash tools/apply_v18_cleanup_local.sh
 ```
 
-## 나중에 기능 붙일 지점
+## 제출 전 체크
 
-현재 JavaScript의 `state` 객체가 Mock DB 역할을 합니다.
-나중에는 아래 API로 분리하면 됩니다.
+```bash
+bash tools/health_check.sh
+```
 
-- `POST /api/sessions` : 계약 설명방 생성
-- `POST /api/sessions/{session_id}/participants` : 참여자 입장
-- `POST /api/sessions/{session_id}/identity/verify` : 모바일 신분증 인증 결과 저장
-- `POST /api/sessions/{session_id}/consents` : 녹취/AI/해시 기록 동의 저장
-- `POST /api/sessions/{session_id}/recordings` : 녹취 파일 저장 및 해시 생성
-- `POST /api/sessions/{session_id}/documents` : 계약서 업로드
-- `POST /api/sessions/{session_id}/analysis` : AI 분석 실행
-- `POST /api/sessions/{session_id}/reports` : 리포트 생성
-- `GET /api/sessions/{session_id}/trust-log` : 심사위원용 신뢰 로그 조회
-- `GET /verify/{report_id}` : QR 검증 화면
+이 스크립트는 실행에 방해되는 캐시, 중복 CSS 파일, 주요 파일 누락 여부, JS 문법, 프론트엔드 액션 누락 여부를 빠르게 확인합니다.
 
-## 중요한 표기 원칙
 
-아직 실제 연동이 아닌 기능은 완료처럼 보이지 않도록 아래 상태값을 사용했습니다.
-
-- `identity_verified_mock`
-- `hash_generated_local`
-- `chain_anchor_simulated`
-- `ready_to_integrate_omnione`
-
+## v33 Flow Bugfix
+- UI step is now treated as route/tab-local state to prevent participant tabs from resetting the host flow.
+- `go-mobile-report` and `go-report` now mark AI processing complete before navigating to the report.
+- Storage sync updates shared consent/report data without forcing the current tab to another screen.

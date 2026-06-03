@@ -1,3 +1,7 @@
+/* Legacy UI styles preserved from earlier MVP iterations.
+   Do not edit during demo stabilization unless absolutely necessary.
+*/
+
 :root {
   --bg: #f7f4ec;
   --surface: #ffffff;
@@ -4262,8 +4266,319 @@ body.report-screen.user-mode .evidence-score span {
   .addendum-confirm-card { padding: 20px; }
 }
 
-/* v6.7 compatibility bridge */
-@import url('/static/css/style.css?v=20260601-v6-7-field-protection-ux');
+/* ==========================================================
+   v6.7 Field Protection UX
+   - first action stronger
+   - field-ready visual risk example
+   - additional material prompt
+   - pre-contract question guidance
+   ========================================================== */
+:root {
+  --cm-bg-cool: #F8FAFC;
+  --cm-device-border: #334155;
+  --cm-burgundy: #9F1239;
+  --cm-teal: #0F766E;
+  --cm-orange: #EA580C;
+}
+
+body.user-mode {
+  background:
+    radial-gradient(circle at 14% 6%, rgba(15, 118, 110, 0.10), transparent 30%),
+    radial-gradient(circle at 86% 18%, rgba(51, 65, 85, 0.12), transparent 34%),
+    var(--cm-bg-cool) !important;
+}
+
+/* PC demo must look physically like a phone mirror, not a floating rectangle. */
+body.user-mode .phone-frame {
+  border: 12px solid var(--cm-device-border) !important;
+  border-radius: 44px !important;
+  padding: 0 !important;
+  background: var(--cm-device-border) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  overflow: hidden;
+}
+body.user-mode .phone-status-bar {
+  height: 48px;
+  padding: 0 20px;
+  background: var(--cm-device-border);
+}
+body.user-mode .phone-screen {
+  border-radius: 30px 30px 26px 26px;
+  background: #fbfaf7;
+}
+
+.field-home-screen {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+.field-hero-title {
+  margin-bottom: 12px !important;
+  font-size: 31px !important;
+  line-height: 1.16 !important;
+  letter-spacing: -0.065em !important;
+}
+.field-hero-desc {
+  margin-bottom: 16px !important;
+  font-size: 15px !important;
+  line-height: 1.58 !important;
+}
+
+/* Visualize the core conflict instead of showing a passive gray paragraph. */
+.risk-scenario-card.visual-risk {
+  padding: 20px !important;
+  background: #fff;
+  border: 1px solid #e4e9f0;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
+}
+.visual-risk .scenario-quote {
+  margin-bottom: 0;
+  border-color: #e5e7eb;
+}
+.visual-risk .scenario-quote.verbal {
+  background: #fffaf0;
+  border-color: rgba(234, 88, 12, 0.22);
+}
+.visual-risk .scenario-quote.document {
+  background: #fff7f8;
+  border-color: rgba(159, 18, 57, 0.20);
+}
+.visual-risk .scenario-quote strong {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.scenario-conflict-arrow {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 10px 0;
+  color: var(--cm-burgundy);
+}
+.scenario-conflict-arrow span {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(159, 18, 57, 0.09);
+  font-size: 20px;
+  font-weight: 900;
+}
+.scenario-conflict-arrow strong {
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+.scenario-risk-chip {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(159, 18, 57, 0.10);
+  color: var(--cm-burgundy);
+  font-size: 13px;
+  font-weight: 900;
+}
+.field-fixed-cta {
+  margin-top: auto !important;
+  position: sticky;
+  bottom: 0;
+  padding-top: 12px;
+  background: linear-gradient(to bottom, rgba(251,250,247,0), rgba(251,250,247,0.96) 26%, rgba(251,250,247,1));
+}
+.field-fixed-cta .big-action {
+  min-height: 64px;
+  font-size: 17px;
+}
+
+.supporting-doc-card {
+  margin: 16px 0;
+  padding: 22px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid rgba(51, 65, 85, 0.11);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.055);
+}
+.supporting-doc-card h3 {
+  margin: 3px 0 8px;
+  color: var(--primary);
+  font-size: 20px;
+  letter-spacing: -.04em;
+}
+.supporting-doc-card p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #64748b;
+  word-break: keep-all;
+}
+.supporting-doc-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.ghost-inline-action {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 16px;
+  border: 1px solid rgba(51,65,85,.12);
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 900;
+}
+
+.compact-consent-list .legal-consent-item {
+  align-items: center;
+  min-height: 58px;
+}
+.compact-consent-list .legal-consent-item strong {
+  font-size: 15px;
+  line-height: 1.35;
+}
+.compact-legal-note {
+  margin: 10px 0 14px;
+  font-size: 14px;
+}
+
+.recording-link-card p {
+  margin: 0 0 16px;
+  color: #475569;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.recording-link-card p strong {
+  color: var(--primary);
+}
+.recording-state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.recording-state-grid div {
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.recording-state-grid span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 850;
+  color: #64748b;
+}
+.recording-state-grid strong {
+  color: var(--cm-teal);
+  font-weight: 900;
+}
+
+.precontract-question-card {
+  margin-top: 22px;
+  padding: 26px;
+  border-radius: 28px;
+  background: #fff;
+  border: 1px solid rgba(159, 18, 57, 0.16);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, .06);
+}
+.precontract-question-card h3 {
+  margin: 4px 0 16px;
+  color: var(--primary);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+}
+.question-list {
+  display: grid;
+  gap: 12px;
+}
+.question-list p {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: #fff7f8;
+  border: 1px solid rgba(159, 18, 57, 0.14);
+  color: #4a3439;
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+/* User-level terminology: keep technical labels subdued, not dominant. */
+body.user-mode .verify-workspace-v65 .hash-line,
+body.user-mode .technical-details-v65 {
+  color: #64748b;
+}
+
+@media (max-width: 767px) {
+  body.user-mode .phone-frame {
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+  .field-fixed-cta {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+/* =========================================================
+   v6.8 Action-Oriented Protection UX
+   - 첫 화면 CTA/카피 강화
+   - 버튼처럼 보이는 비버튼 제거
+   - 계약 전 확인 질문 우선 노출
+   - 사용자 화면 기술 용어 완화
+   ========================================================= */
+
+body.user-mode.home-screen #userStatusMini {
+  display: none !important;
+}
+
+.action-hero-screen {
+  padding-bottom: 132px !important;
+}
+
+.action-hero-title {
+  letter-spacing: -0.055em;
+  line-height: 1.13 !important;
+}
+
+.action-hero-title span {
+  display: inline-block;
+  margin-top: 7px;
+  color: var(--primary, #17365d);
+  font-weight: 950;
+  text-decoration: underline;
+  text-decoration-thickness: 0.14em;
+  text-underline-offset: 0.16em;
+  text-decoration-color: rgba(15, 118, 110, 0.32);
+}
+
+.field-hero-desc {
+  max-width: 310px;
+  line-height: 1.58 !important;
+}
+
+.action-risk-flow {
+  padding: 18px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+}
+
+.scenario-bridge {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  padding: 8px 0 9px;
+  color: #64748b;
+  text-align: center;
+}
+
+.scenario-bridge span {
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -5531,6 +5846,128 @@ body.addendum-screen .phone-screen::after {
 }
 
 
+/* v6.12.1 hotfix: cache bust + workspace stability */
+.report-action-panel-v612,
+.addendum-side-card,
+.verify-qr-column {
+  position: static;
+  max-width: 340px;
+}
+
+.report-side-card-v612 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.next-step-stack-v612 {
+  display: grid;
+  gap: 10px;
+}
+
+.next-step-item-v612 {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.next-step-item-v612 > span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #17365d;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.next-step-item-v612 strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #17365d;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 900;
+}
+
+.next-step-item-v612 em {
+  display: block;
+  color: #64748b;
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.report-side-actions-v612 {
+  margin-top: 2px;
+  display: grid;
+  gap: 12px;
+}
+
+.report-side-actions-v612 .big-action,
+.report-side-actions-v612 .secondary-action,
+.report-side-actions-v612 .ghost-inline-action {
+  width: 100%;
+}
+
+.verify-card-hero.no-stamp-v612 {
+  grid-template-columns: 1fr;
+}
+
+.verify-inline-summary-v612 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.verify-inline-summary-v612 span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f0fdfa;
+  border: 1px solid rgba(15,118,110,.14);
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.verify-side-v65 .qr-caption {
+  margin-top: 10px;
+}
+
+@media (max-width: 1200px) {
+  .report-grid-v612,
+  .addendum-grid-v612,
+  .verify-workspace-v612 {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 980px) {
+  .report-grid-v612,
+  .addendum-grid-v612,
+  .verify-workspace-v612 {
+    grid-template-columns: 1fr;
+  }
+
+  .report-action-panel-v612,
+  .addendum-side-card,
+  .verify-qr-column {
+    max-width: none;
+  }
+}
+
+
 /* =========================================================
    v6.12.2 Final Shell Cleanup
    목적: /report, /verify, /addendum에서 모바일 폰 상단바/검은 띠 잔재를 완전히 제거한다.
@@ -5672,5 +6109,1712 @@ body.user-mode.addendum-screen .screen-card {
   .addendum-workspace-v612,
   .verify-workspace-v612 {
     padding-top: 18px !important;
+  }
+}
+
+
+
+   Scope: first mobile start screen only
+   Goal: visual explanation, not mini report
+   ========================================================= */
+
+body.user-mode.home-screen .phone-screen {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(132, 196, 188, 0.18), transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(135, 160, 182, 0.20), transparent 38%),
+    #f7f8f5;
+}
+
+body.user-mode.home-screen .screen-card {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+}
+
+.cm-start-hero {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 0 2px;
+}
+
+.cm-start-kicker {
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(15, 38, 63, 0.06);
+  color: #27445f;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cm-start-title-block {
+  display: grid;
+  gap: 10px;
+}
+
+.cm-start-title-block h2 {
+  margin: 0;
+  color: #10263f;
+  font-size: clamp(28px, 7vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -0.07em;
+  word-break: keep-all;
+}
+
+.cm-start-title-block p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.62;
+  font-weight: 650;
+  word-break: keep-all;
+}
+
+.cm-mirror-explainer {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72)),
+    rgba(255,255,255,0.78);
+  border: 1px solid rgba(15, 38, 63, 0.08);
+  box-shadow: 0 20px 50px rgba(15, 38, 63, 0.10);
+  overflow: hidden;
+}
+
+.cm-mirror-explainer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(175, 222, 215, 0.18), transparent 40%, rgba(230, 233, 238, 0.34)),
+    linear-gradient(180deg, rgba(255,255,255,0.42), transparent);
+  pointer-events: none;
+}
+
+.cm-mirror-topline,
+.cm-mirror-pair,
+.cm-start-judgement,
+.cm-start-question {
+  position: relative;
+  z-index: 1;
+}
+
+.cm-mirror-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cm-mirror-topline span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.cm-mirror-topline strong {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(31, 111, 91, 0.10);
+  color: #1f6f5b;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.cm-mirror-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.cm-mirror-card {
+  min-height: 158px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 38, 63, 0.08);
+}
+
+.cm-mirror-card-voice {
+  background:
+    linear-gradient(180deg, rgba(229, 248, 245, 0.96), rgba(241, 252, 250, 0.92));
+}
+
+.cm-mirror-card-contract {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(241,244,248,0.94));
+}
+
+.cm-mirror-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.cm-mirror-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.78);
+  box-shadow: inset 0 0 0 1px rgba(15, 38, 63, 0.05);
+  font-size: 12px;
+}
+
+.cm-mirror-card strong {
+  display: block;
+  color: #10263f;
+  font-size: clamp(18px, 4.8vw, 24px);
+  line-height: 1.08;
+  letter-spacing: -0.07em;
+  word-break: keep-all;
+}
+
+.cm-mirror-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 700;
+  word-break: keep-all;
+}
+
+.cm-mirror-crack {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.cm-mirror-crack svg {
+  width: 28px;
+  height: 112px;
+  overflow: visible;
+}
+
+.cm-mirror-crack path {
+  fill: none;
+  stroke: #6f7d8f;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 148;
+  stroke-dashoffset: 148;
+  animation: cmCrackDraw 0.52s ease-out 0.18s forwards;
+  filter: drop-shadow(0 0 5px rgba(31, 111, 91, 0.18));
+}
+
+.cm-mirror-crack span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #1f6f5b;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  animation: cmCrackLabel 0.28s ease-out 0.62s forwards;
+}
+
+.cm-start-judgement {
+  padding: 13px 14px;
+  border-radius: 20px;
+  background: rgba(15, 38, 63, 0.045);
+  border: 1px solid rgba(15, 38, 63, 0.06);
+}
+
+.cm-start-judgement span,
+.cm-start-question span {
+  display: block;
+  margin-bottom: 6px;
+  color: #1f6f5b;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.cm-start-judgement p {
+  margin: 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.55;
+  font-weight: 750;
+  word-break: keep-all;
+}
+
+.cm-start-question {
+  padding: 14px;
+  border-radius: 22px;
+  background: #10263f;
+  color: white;
+  box-shadow: 0 14px 30px rgba(15, 38, 63, 0.18);
+}
+
+.cm-start-question span {
+  color: #aee6db;
+}
+
+.cm-start-question strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.44;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
+
+.cm-start-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.cm-start-btn {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  cursor: pointer;
+}
+
+.cm-start-primary {
+  background: #10263f;
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(15, 38, 63, 0.18);
+}
+
+.cm-start-secondary {
+  background: #fff;
+  color: #10263f;
+  border: 1px solid rgba(15, 38, 63, 0.11);
+}
+
+.cm-start-footnote {
+  margin: -4px 0 0;
+  color: #8a96a8;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: center;
+  font-weight: 700;
+}
+
+@keyframes cmCrackDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes cmCrackLabel {
+  from {
+    opacity: 0;
+    transform: rotate(180deg) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(180deg) translateY(0);
+  }
+}
+
+@media (max-width: 420px) {
+  .cm-mirror-explainer {
+    padding: 12px;
+    border-radius: 26px;
+  }
+
+  .cm-mirror-pair {
+    grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .cm-mirror-card {
+    min-height: 148px;
+    padding: 12px 10px;
+    border-radius: 19px;
+  }
+
+  .cm-mirror-card strong {
+    font-size: 18px;
+  }
+
+  .cm-mirror-card p {
+    font-size: 10.5px;
+  }
+
+  .cm-mirror-crack svg {
+    width: 24px;
+    height: 104px;
+  }
+
+  .cm-mirror-crack span {
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
+   Contract Mirror Home V7 Flow Polish
+   Scope: first screen + early contract registration screens
+   Purpose: clearer flow, premium compare card, fixed CTA, step guidance
+   ========================================================= */
+
+body.user-mode.home-screen .phone-screen {
+  position: relative;
+  height: 704px;
+  min-height: 650px;
+  max-height: 704px;
+  overflow: hidden;
+  padding: 0;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(167, 226, 217, 0.26), transparent 34%),
+    radial-gradient(circle at 90% 5%, rgba(135, 160, 182, 0.14), transparent 36%),
+    linear-gradient(180deg, #f8faf8 0%, #eef3f1 100%);
+}
+
+body.user-mode.home-screen .screen-card {
+  height: 100%;
+  min-height: 100%;
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.cm-home-v7 {
+  position: relative;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.cm-home-scroll-v7 {
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 24px 118px;
+  scrollbar-width: none;
+}
+
+.cm-home-scroll-v7::-webkit-scrollbar { display: none; }
+
+.cm-home-hero-v7 {
+  display: grid;
+  gap: 12px;
+}
+
+.cm-home-chip-row-v7 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.cm-home-chip-v7 {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(16, 38, 63, 0.06);
+  color: #526173;
+  font-size: 10.8px;
+  font-weight: 950;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+
+.cm-home-hero-v7 h2 {
+  margin: 0;
+  color: #10263f;
+  font-size: clamp(29px, 7.4vw, 38px);
+  line-height: 1.05;
+  letter-spacing: -0.075em;
+  word-break: keep-all;
+}
+
+.cm-home-lead-v7 {
+  margin: 0;
+  color: #667085;
+  font-size: 13.2px;
+  line-height: 1.58;
+  font-weight: 720;
+  word-break: keep-all;
+}
+
+.cm-flow-chip-v7 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(16, 38, 63, 0.07);
+  color: #6b7788;
+  font-size: 10.4px;
+  line-height: 1;
+  font-weight: 850;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px rgba(16, 38, 63, 0.05);
+}
+
+.cm-flow-chip-v7 i {
+  color: rgba(16, 38, 63, 0.26);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.cm-mirror-core-v7 {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.cm-mirror-stage-v7 {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.84));
+  border: 1px solid rgba(16, 38, 63, 0.08);
+  box-shadow: 0 22px 54px rgba(16, 38, 63, 0.10);
+  overflow: hidden;
+}
+
+.cm-mirror-stage-v7::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(181, 231, 222, 0.22), transparent 44%, rgba(229, 233, 238, 0.48)),
+    radial-gradient(circle at 50% 54%, rgba(16, 38, 63, 0.035), transparent 44%);
+  pointer-events: none;
+}
+
+.cm-side-card-v7,
+.cm-crack-v7 { position: relative; z-index: 1; }
+
+.cm-side-card-v7 {
+  min-width: 0;
+  min-height: 154px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 10px;
+  border-radius: 22px;
+  border: 1px solid rgba(16, 38, 63, 0.08);
+}
+
+.cm-side-voice-v7 {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,255,255,0.86), transparent 34%),
+    linear-gradient(180deg, rgba(224, 248, 244, 0.99), rgba(242, 253, 251, 0.95));
+  border-color: rgba(57, 145, 124, 0.11);
+}
+
+.cm-side-contract-v7 {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f4f6f8 100%);
+  border-color: rgba(16, 38, 63, 0.14);
+  border-radius: 19px;
+}
+
+.cm-side-label-v7 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #667085;
+  font-size: 10.5px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.cm-side-label-v7 em {
+  font-style: normal;
+}
+
+.cm-side-icon-v7 {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.88);
+  box-shadow: inset 0 0 0 1px rgba(16, 38, 63, 0.05);
+  font-size: 12px;
+}
+
+.cm-side-card-v7 strong {
+  display: block;
+  color: #10263f;
+  font-size: clamp(31px, 7.9vw, 38px);
+  line-height: 0.98;
+  letter-spacing: -0.09em;
+  word-break: keep-all;
+}
+
+.cm-side-contract-v7 strong { color: #253244; }
+
+.cm-side-card-v7 p {
+  margin: 0;
+  color: #667085;
+  font-size: 10.3px;
+  line-height: 1.38;
+  font-weight: 740;
+  word-break: keep-all;
+}
+
+.cm-crack-v7 {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+
+.cm-crack-line-v7 {
+  position: relative;
+  width: 1.5px;
+  height: 112px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, #8d99a8 13%, #8d99a8 87%, transparent);
+  opacity: 0;
+  transform: scaleY(0.86);
+  animation: cmHomeV7CrackIn 0.32s ease-out 0.16s forwards;
+  box-shadow: 0 0 7px rgba(16, 38, 63, 0.08);
+}
+
+.cm-crack-line-v7::before,
+.cm-crack-line-v7::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: #8d99a8;
+  transform-origin: left center;
+}
+
+.cm-crack-line-v7::before {
+  top: 42%;
+  transform: translateX(-1px) rotate(-58deg);
+}
+
+.cm-crack-line-v7::after {
+  top: 55%;
+  transform: translateX(-9px) rotate(58deg);
+}
+
+.cm-conflict-badge-v7 {
+  justify-self: center;
+  width: fit-content;
+  margin-top: -2px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(223, 248, 242, 0.96);
+  color: #1f6f5b;
+  border: 1px solid rgba(31, 111, 91, 0.18);
+  font-size: 11px;
+  line-height: 1;
+  text-align: center;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.cm-ai-card-v7,
+.cm-question-card-v7,
+.cm-choice-copy-v7 {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.84);
+  border: 1px solid rgba(16, 38, 63, 0.07);
+  box-shadow: 0 12px 26px rgba(16, 38, 63, 0.06);
+}
+
+.cm-ai-card-v7 span,
+.cm-question-card-v7 span {
+  color: #1f6f5b;
+  font-size: 10.5px;
+  font-weight: 950;
+}
+
+.cm-ai-card-v7 strong {
+  color: #10263f;
+  font-size: 15px;
+  line-height: 1.28;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
+
+.cm-question-card-v7 {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,252,250,0.94));
+}
+
+.cm-question-card-v7::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: #8fd4c4;
+}
+
+.cm-question-card-v7 p {
+  position: relative;
+  margin: 0;
+  color: #10263f;
+  font-size: 18px;
+  line-height: 1.34;
+  font-weight: 950;
+  letter-spacing: -0.055em;
+  word-break: keep-all;
+}
+
+.cm-choice-copy-v7 {
+  margin-top: 10px;
+  padding: 4px 2px 2px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.cm-choice-copy-v7 strong {
+  color: #10263f;
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.cm-choice-copy-v7 p {
+  margin: 0;
+  color: #6f7d8f;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 720;
+  word-break: keep-all;
+}
+
+.cm-home-fixed-cta-v7 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 14px 24px 18px;
+  background:
+    linear-gradient(180deg, rgba(247,249,247,0), rgba(247,249,247,0.96) 34%, #f8faf8 100%);
+  backdrop-filter: blur(12px);
+}
+
+.cm-fixed-main-v7,
+.cm-fixed-sub-v7 {
+  min-height: 52px;
+  border-radius: 18px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  cursor: pointer;
+}
+
+.cm-fixed-main-v7 {
+  border: 0;
+  padding: 0 16px;
+  background: #10263f;
+  color: #fff;
+  font-size: 14.8px;
+  box-shadow: 0 16px 30px rgba(16, 38, 63, 0.21);
+}
+
+.cm-fixed-sub-v7 {
+  padding: 0 13px;
+  background: #ffffff;
+  color: #10263f;
+  border: 1px solid rgba(16, 38, 63, 0.14);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.screen-card { position: relative; }
+
+.screen-back-button {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(16, 38, 63, 0.10);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.84);
+  color: #10263f;
+  font-size: 17px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.screen-step-label {
+  width: fit-content;
+  margin: 0 0 8px 42px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(31, 111, 91, 0.09);
+  color: #1f6f5b;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.cm-file-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.cm-file-card-head h3 { margin: 0; }
+
+.cm-file-remove-button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(16, 38, 63, 0.10);
+  border-radius: 999px;
+  background: #fff;
+  color: #7a8797;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cm-next-step-note {
+  margin-top: -2px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(31, 111, 91, 0.07);
+  color: #526173;
+  font-weight: 730;
+}
+
+@keyframes cmHomeV7CrackIn {
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@media (max-width: 420px) {
+  body.user-mode.home-screen .phone-screen {
+    height: min(704px, calc(100vh - 116px));
+    min-height: 620px;
+  }
+
+  .cm-home-scroll-v7 { padding: 22px 22px 110px; }
+  .cm-home-v7 { min-height: 620px; }
+  .cm-home-hero-v7 { gap: 10px; }
+  .cm-home-hero-v7 h2 { font-size: 29px; }
+  .cm-home-lead-v7 { font-size: 12.8px; }
+  .cm-flow-chip-v7 { font-size: 9.5px; gap: 4px; padding: 7px 8px; }
+
+  .cm-mirror-stage-v7 {
+    grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr);
+    gap: 6px;
+    padding: 10px;
+    border-radius: 26px;
+  }
+
+  .cm-side-card-v7 {
+    min-height: 146px;
+    padding: 12px 9px;
+    border-radius: 19px;
+  }
+
+  .cm-side-card-v7 strong { font-size: 31px; }
+  .cm-side-card-v7 p { font-size: 9.6px; }
+  .cm-crack-line-v7 { height: 102px; }
+  .cm-question-card-v7 p { font-size: 17px; }
+
+  .cm-home-fixed-cta-v7 { padding: 12px 22px 16px; }
+  .cm-fixed-main-v7,
+  .cm-fixed-sub-v7 { min-height: 49px; }
+  .cm-fixed-sub-v7 { padding: 0 10px; font-size: 12px; }
+}
+
+
+/* =========================================================
+   Contract Mirror V8 Flow Polish
+   - clearer role guidance in invite/waiting
+   - bridge from mobile analysis to PC report
+   - stronger report action sentence
+   ========================================================= */
+
+.screen-step-label.no-back {
+  margin-left: 0 !important;
+}
+
+.invite-role-note-v8 {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0 6px;
+  padding: 12px 13px;
+  border-radius: 18px;
+  background: rgba(31, 111, 91, 0.07);
+  border: 1px solid rgba(31, 111, 91, 0.11);
+}
+
+.invite-role-note-v8 strong {
+  color: #10263f;
+  font-size: 13.5px;
+  line-height: 1.4;
+  font-weight: 950;
+  word-break: keep-all;
+}
+
+.invite-role-note-v8 span {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 740;
+  word-break: keep-all;
+}
+
+.report-bridge-card-v8 {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 12px;
+  padding: 16px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f7fbfa);
+  border: 1px solid rgba(31, 111, 91, 0.12);
+  box-shadow: 0 14px 30px rgba(16, 38, 63, 0.08);
+}
+
+.report-bridge-card-v8 span {
+  color: #1f6f5b;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.report-bridge-card-v8 h3 {
+  margin: 0;
+  color: #10263f;
+  font-size: 20px;
+  line-height: 1.18;
+  letter-spacing: -0.055em;
+}
+
+.report-bridge-card-v8 p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 730;
+  word-break: keep-all;
+}
+
+.report-priority-banner-v8 {
+  display: grid;
+  gap: 6px;
+  margin: -6px 0 22px;
+  padding: 18px 22px;
+  border-radius: 24px;
+  background: #10263f;
+  color: white;
+  box-shadow: 0 16px 38px rgba(16, 38, 63, 0.14);
+}
+
+.report-priority-banner-v8 span {
+  color: #aee6db;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.report-priority-banner-v8 strong {
+  color: #ffffff;
+  font-size: clamp(18px, 2vw, 25px);
+  line-height: 1.35;
+  letter-spacing: -0.045em;
+  word-break: keep-all;
+}
+
+@media (min-width: 768px) {
+  body.user-mode:not(.evidence-screen) .mobile-demo-label {
+    width: min(560px, calc(100vw - 32px)) !important;
+    border-radius: 28px !important;
+  }
+
+  body.user-mode:not(.evidence-screen) .mobile-demo-label span {
+    max-width: 300px !important;
+  }
+}
+
+/* =========================================================
+   Contract Mirror V9 Flow Logic Polish
+   - Pre-analysis addendum path removed from Step 1
+   - Invite code participant flow separated from host flow
+   ========================================================= */
+
+.cm-pre-doc-note-v9 {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.74);
+  border-style: dashed;
+}
+
+.invite-code-entry-card-v9 {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,250,249,0.92));
+  border: 1px solid rgba(16, 38, 63, 0.08);
+  box-shadow: 0 14px 34px rgba(16, 38, 63, 0.08);
+}
+
+.invite-code-entry-card-v9 label {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.invite-code-input-mock-v9 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 62px;
+  border-radius: 18px;
+  background: #10263f;
+  color: #fff;
+  font-size: 30px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  box-shadow: 0 16px 30px rgba(16, 38, 63, 0.16);
+}
+
+.invite-code-entry-card-v9 small {
+  color: #7a8797;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.invitee-ready-panel-v9 {
+  margin-top: 2px;
+}
+
+.compact-invitee-recording-v9 {
+  margin-top: 4px;
+}
+
+.invitee-done-card-v9 {
+  background: linear-gradient(180deg, rgba(241, 252, 248, 0.96), rgba(255,255,255,0.96));
+}
+
+/* =========================================================
+   Contract Mirror V10 Final Flow Polish
+   - Step/title single row
+   - user-facing technical terms softened
+   - bridge message emphasized
+   - PC report/verify spacing tightened
+   ========================================================= */
+
+/* Mobile flow: combine Step and title into one line */
+.cm-step-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px 42px;
+  min-height: 34px;
+}
+
+.cm-step-title-row.no-back {
+  margin-left: 0;
+}
+
+.cm-step-title-row .screen-step-label {
+  margin: 0 !important;
+  flex: 0 0 auto;
+}
+
+.cm-step-title-row strong {
+  color: #10263f;
+  font-size: 15px;
+  line-height: 1.15;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+  word-break: keep-all;
+}
+
+/* Reduce top heaviness inside mobile white cards */
+body.user-mode:not(.evidence-screen):not(.home-screen) .screen-card {
+  padding-top: 28px !important;
+}
+
+.screen-back-button {
+  top: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.cm-user-record-note-v10 .record-summary strong {
+  color: #10263f;
+}
+
+.cm-record-ok-chip-v10 {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(31, 111, 91, 0.09);
+  color: #1f6f5b;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+/* Analysis complete bridge: make the mobile -> PC transition explicit */
+.report-bridge-card-v10 {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 12px;
+  padding: 16px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffffff, #f7fbfa);
+  border: 1px solid rgba(31, 111, 91, 0.13);
+  box-shadow: 0 14px 30px rgba(16, 38, 63, 0.08);
+}
+
+.report-bridge-card-v10 span {
+  color: #1f6f5b;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.report-bridge-card-v10 h3 {
+  margin: 0;
+  color: #10263f;
+  font-size: 20px;
+  line-height: 1.18;
+  letter-spacing: -0.055em;
+}
+
+.cm-bridge-flow-v10 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(16, 38, 63, 0.045);
+  border: 1px solid rgba(16, 38, 63, 0.06);
+}
+
+.cm-bridge-flow-v10 strong {
+  color: #10263f;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: -0.035em;
+}
+
+.cm-bridge-flow-v10 i {
+  color: #1f6f5b;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.report-bridge-card-v10 p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 730;
+  word-break: keep-all;
+}
+
+/* PC report: reduce empty top area */
+body.user-mode.evidence-screen .app-shell,
+body.user-mode.workspace-screen .app-shell,
+body.user-mode.report-screen .app-shell,
+body.user-mode.verify-screen .app-shell,
+body.user-mode.addendum-screen .app-shell {
+  padding-top: 18px !important;
+}
+
+body.user-mode.evidence-screen .topbar,
+body.user-mode.workspace-screen .topbar,
+body.user-mode.report-screen .topbar,
+body.user-mode.verify-screen .topbar,
+body.user-mode.addendum-screen .topbar {
+  min-height: 60px !important;
+  margin-bottom: 16px !important;
+  padding: 12px 18px !important;
+  border-radius: 24px !important;
+}
+
+body.user-mode.evidence-screen .brand-mark,
+body.user-mode.workspace-screen .brand-mark,
+body.user-mode.report-screen .brand-mark,
+body.user-mode.verify-screen .brand-mark,
+body.user-mode.addendum-screen .brand-mark {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 14px !important;
+}
+
+body.user-mode.evidence-screen h1,
+body.user-mode.workspace-screen h1,
+body.user-mode.report-screen h1,
+body.user-mode.verify-screen h1,
+body.user-mode.addendum-screen h1 {
+  font-size: 22px !important;
+}
+
+.report-workspace-v612,
+.addendum-workspace-v612,
+.verify-workspace-v612 {
+  padding-top: 18px !important;
+}
+
+.report-header-v612 {
+  margin-bottom: 16px !important;
+  padding: 22px 24px !important;
+  border-radius: 26px !important;
+}
+
+.report-header-v612 h2 {
+  margin: 5px 0 8px !important;
+}
+
+.report-priority-banner-v8 {
+  margin: -2px 0 16px !important;
+}
+
+/* Verify card: give the left side breathing room and start at top */
+.cm-verify-workspace-v10 {
+  padding-left: clamp(28px, 4vw, 56px) !important;
+  padding-right: clamp(28px, 4vw, 56px) !important;
+}
+
+.cm-verify-workspace-v10 .verify-audit-main {
+  padding-left: 10px;
+}
+
+.cm-verify-title-kicker-v10 {
+  margin-left: 0;
+}
+
+@media (max-width: 900px) {
+  .cm-verify-workspace-v10 {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .cm-verify-workspace-v10 .verify-audit-main {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .cm-step-title-row {
+    margin-bottom: 12px;
+  }
+
+  .cm-step-title-row strong {
+    font-size: 14px;
+  }
+
+  body.user-mode:not(.evidence-screen):not(.home-screen) .screen-card {
+    padding-top: 24px !important;
+  }
+}
+
+/* =========================================================
+   Contract Mirror V11 Header Simplification
+   - Progress screens: remove duplicate white labels in navy device bar
+   - Step/title: unify color and reduce visual competition
+   ========================================================= */
+
+/* 진행 화면에서는 네이비 기기바를 프레임으로만 사용하고,
+   현재 화면 제목은 본문 Step 라인 하나로 통일한다. */
+body.user-mode:not(.home-screen):not(.workspace-screen):not(.evidence-screen):not(.judge-mode):not(.judge-dashboard) #deviceLabel,
+body.user-mode:not(.home-screen):not(.workspace-screen):not(.evidence-screen):not(.judge-mode):not(.judge-dashboard) #userStatusMini {
+  display: none !important;
+}
+
+body.user-mode:not(.home-screen):not(.workspace-screen):not(.evidence-screen):not(.judge-mode):not(.judge-dashboard) .phone-status-bar {
+  justify-content: center !important;
+  height: 42px !important;
+  padding: 0 !important;
+}
+
+/* Step과 화면 제목을 하나의 진행 타이틀처럼 보이게 정리 */
+.cm-step-title-row {
+  gap: 9px !important;
+  margin-bottom: 13px !important;
+}
+
+.cm-step-title-row strong {
+  color: #1f6f5b !important;
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.cm-step-title-row .screen-step-label {
+  background: rgba(31, 111, 91, 0.10) !important;
+  color: #1f6f5b !important;
+  box-shadow: inset 0 0 0 1px rgba(31, 111, 91, 0.06) !important;
+}
+
+/* 상단 텍스트를 뺀 만큼 본문이 과하게 내려오지 않도록 여백 보정 */
+body.user-mode:not(.evidence-screen):not(.home-screen):not(.workspace-screen) .screen-card {
+  padding-top: 24px !important;
+}
+
+@media (max-width: 420px) {
+  body.user-mode:not(.home-screen):not(.workspace-screen):not(.evidence-screen):not(.judge-mode):not(.judge-dashboard) .phone-status-bar {
+    height: 38px !important;
+  }
+
+  .cm-step-title-row {
+    gap: 8px !important;
+    margin-bottom: 11px !important;
+  }
+
+  .cm-step-title-row strong {
+    font-size: 14px !important;
+  }
+}
+
+/* =========================================================
+   Contract Mirror v12 State Logic Polish
+   - invite 상태 로직 표시
+   - 검증 카드 용어/추가 자료 선택 단계 정리
+   - 첫 화면 CTA가 더 빨리 보이도록 홈 높이/밀도 조정
+   ========================================================= */
+
+body.user-mode.home-screen .phone-frame {
+  width: min(470px, 100%) !important;
+  min-height: 678px !important;
+  max-height: 708px !important;
+  padding: 12px !important;
+}
+
+body.user-mode.home-screen .phone-status-bar {
+  height: 38px !important;
+  padding: 0 12px !important;
+}
+
+body.user-mode.home-screen .phone-screen {
+  height: 624px !important;
+  min-height: 624px !important;
+  max-height: 624px !important;
+}
+
+body.user-mode.home-screen .cm-home-scroll-v7 {
+  padding: 18px 22px 106px !important;
+}
+
+body.user-mode.home-screen .cm-home-hero-v7 {
+  gap: 9px !important;
+}
+
+body.user-mode.home-screen .cm-home-hero-v7 h2 {
+  font-size: clamp(27px, 6.9vw, 35px) !important;
+}
+
+body.user-mode.home-screen .cm-home-lead-v7 {
+  font-size: 12.7px !important;
+  line-height: 1.52 !important;
+}
+
+body.user-mode.home-screen .cm-flow-chip-v7 {
+  padding: 7px 9px !important;
+  font-size: 9.8px !important;
+}
+
+body.user-mode.home-screen .cm-mirror-core-v7 {
+  margin-top: 12px !important;
+  gap: 10px !important;
+}
+
+body.user-mode.home-screen .cm-mirror-stage-v7 {
+  padding: 10px !important;
+  border-radius: 26px !important;
+}
+
+body.user-mode.home-screen .cm-side-card-v7 {
+  min-height: 136px !important;
+  padding: 12px 9px !important;
+  border-radius: 19px !important;
+}
+
+body.user-mode.home-screen .cm-side-card-v7 strong {
+  font-size: clamp(27px, 7vw, 33px) !important;
+}
+
+body.user-mode.home-screen .cm-side-card-v7 p {
+  font-size: 9.8px !important;
+}
+
+body.user-mode.home-screen .cm-crack-line-v7 {
+  height: 96px !important;
+}
+
+body.user-mode.home-screen .cm-ai-card-v7,
+body.user-mode.home-screen .cm-question-card-v7,
+body.user-mode.home-screen .cm-choice-copy-v7 {
+  padding: 12px !important;
+  border-radius: 20px !important;
+}
+
+body.user-mode.home-screen .cm-question-card-v7 p {
+  font-size: 16px !important;
+  line-height: 1.32 !important;
+}
+
+body.user-mode.home-screen .cm-home-fixed-cta-v7 {
+  padding: 11px 22px 14px !important;
+}
+
+body.user-mode.home-screen .cm-fixed-main-v7,
+body.user-mode.home-screen .cm-fixed-sub-v7 {
+  min-height: 48px !important;
+}
+
+.invite-logic-note-v12 {
+  background: #f8fbfa;
+  border-color: rgba(31, 111, 91, 0.12);
+}
+
+.invite-state-list-v12 > div {
+  border-color: rgba(16, 38, 63, 0.08);
+}
+
+.invite-state-list-v12 strong.done {
+  color: #0f766e;
+}
+
+.invite-state-list-v12 strong.wait {
+  color: #b45309;
+}
+
+.invite-actions-v12 .big-action:disabled {
+  background: #c8d0da;
+  color: #fff;
+  box-shadow: none;
+}
+
+.demo-progress-link-v12 {
+  justify-self: center;
+  color: #64748b !important;
+  font-size: 12px !important;
+}
+
+.report-side-card-v12 {
+  gap: 14px;
+}
+
+.next-step-stack-v12 .next-step-item-v612 {
+  padding: 11px;
+}
+
+.report-record-mini-v12 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 2px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.report-record-mini-v12 span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.report-record-mini-v12 strong {
+  color: #17365d;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.report-side-actions-v12 .secondary-action {
+  min-height: 46px;
+  font-size: 14px;
+}
+
+.addendum-purpose-card-v12 {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: #f8fbfa;
+  border: 1px solid rgba(31, 111, 91, 0.12);
+}
+
+.addendum-purpose-card-v12 strong {
+  color: #17365d;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.addendum-purpose-card-v12 span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.optional-addendum-note-v12 {
+  margin-top: 14px;
+}
+
+.verify-workspace-v12 .verify-row strong {
+  overflow-wrap: anywhere;
+}
+
+.verify-hero-v12 h2 {
+  word-break: keep-all;
+}
+
+@media (max-width: 420px) {
+  body.user-mode.home-screen .phone-frame {
+    min-height: 660px !important;
+    max-height: 690px !important;
+  }
+
+  body.user-mode.home-screen .phone-screen {
+    height: 610px !important;
+    min-height: 610px !important;
+    max-height: 610px !important;
+  }
+
+  body.user-mode.home-screen .cm-home-scroll-v7 {
+    padding: 16px 20px 102px !important;
+  }
+}
+
+/* =========================================================
+   Contract Mirror V13 Logical Terminology Polish
+   Scope: PC report / post-confirm document / verification card wording
+   ========================================================= */
+.report-bridge-card-v13 p,
+.cm-legal-note-v13 {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+  font-weight: 700;
+  word-break: keep-all;
+}
+.report-side-card-v13 .cm-legal-note-v13 {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(16, 38, 63, 0.045);
+  border: 1px solid rgba(16, 38, 63, 0.06);
+}
+.addendum-purpose-card-v13 {
+  border-left: 4px solid rgba(31, 111, 91, 0.45);
+}
+.addendum-confirm-card-v13 p,
+.vault-legal-note-v13 p {
+  color: #667085;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+.vault-legal-note-v13 {
+  border-color: rgba(16, 38, 63, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+}
+.verify-workspace-v13 .verify-status-card,
+.addendum-workspace-v13 .addendum-main-card,
+.report-workspace-v13 .audit-card {
+  scroll-margin-top: 24px;
+}
+
+
+/* =========================================================
+   Contract Mirror V15 Final Flow Simplification
+   - consistent home phone frame
+   - report handoff choices
+   - report -> optional docs -> final card simplified
+   ========================================================= */
+
+/* Desktop guide copy: avoid awkward one-word wrap */
+body.user-mode .mobile-demo-label {
+  gap: 18px !important;
+}
+body.user-mode .mobile-demo-label span {
+  max-width: 440px !important;
+  line-height: 1.35 !important;
+  word-break: keep-all !important;
+}
+
+/* Keep the first screen in the same physical phone frame family as later mobile steps. */
+body.user-mode.home-screen .phone-frame {
+  width: min(535px, 100%) !important;
+  min-height: 760px !important;
+  max-height: 835px !important;
+  border: 12px solid #334155 !important;
+  border-radius: 46px !important;
+  padding: 12px !important;
+  background: #0f172a !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 30px 90px rgba(15, 23, 42, 0.18) !important;
+}
+body.user-mode.home-screen .phone-status-bar {
+  height: 46px !important;
+  padding: 0 18px !important;
+  color: #e2e8f0 !important;
+}
+body.user-mode.home-screen .phone-screen {
+  min-height: 670px !important;
+  max-height: 735px !important;
+  height: auto !important;
+  border-radius: 32px !important;
+  padding: 30px !important;
+  background: #fbfaf7 !important;
+}
+body.user-mode.home-screen .cm-home-scroll-v7 {
+  padding: 20px 22px 104px !important;
+}
+
+.report-bridge-card-v15 {
+  gap: 8px !important;
+  margin: 12px 0 10px !important;
+  padding: 15px 16px !important;
+}
+.report-bridge-card-v15 h3 {
+  font-size: 19px !important;
+}
+.bridge-choice-actions-v15 {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+  margin-top: 10px !important;
+}
+.bridge-choice-actions-v15 .secondary-action {
+  min-height: 46px !important;
+}
+
+.report-workspace-v15 .report-header-v15 p {
+  max-width: 760px;
+}
+.report-priority-banner-v15 {
+  background: #10263f !important;
+  margin-bottom: 14px !important;
+}
+.report-side-card-v15 .next-step-stack-v612 {
+  gap: 10px !important;
+}
+.report-side-card-v15 .next-step-item-v612 {
+  padding: 10px 11px !important;
+}
+.report-side-card-v15 .report-side-actions-v612 {
+  gap: 9px !important;
+}
+.report-side-card-v15 .secondary-result-action {
+  background: #fff !important;
+}
+
+.addendum-workspace-v15 .report-header-v15,
+.verify-workspace-v15 .report-header-v15 {
+  margin-bottom: 14px !important;
+}
+.addendum-grid-v15 {
+  gap: 18px !important;
+}
+.addendum-main-card-v15,
+.addendum-side-card-v15 {
+  border-radius: 26px !important;
+}
+.addendum-purpose-card-v15 {
+  margin-bottom: 16px !important;
+  background: #f8fbfa !important;
+}
+.post-analysis-choice-v15 {
+  display: grid;
+  gap: 12px;
+}
+.addendum-confirm-card-v15 {
+  margin-top: 0 !important;
+}
+
+.verify-workspace-v15 {
+  align-items: start !important;
+}
+.verify-hero-v15 h2 {
+  letter-spacing: -0.06em;
+  word-break: keep-all;
+}
+.verify-summary-v15 {
+  margin-top: 14px !important;
+}
+.verify-plain-note-v15 {
+  margin-top: 14px !important;
+}
+.verify-side-v15 {
+  padding-left: 4px !important;
+}
+.verify-actions-v15 {
+  gap: 9px !important;
+}
+.verify-actions-v15 .secondary-action {
+  min-height: 48px !important;
+}
+.technical-details-v15 summary {
+  cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .bridge-choice-actions-v15 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.user-mode .mobile-demo-label span {
+    max-width: none !important;
+    text-align: left !important;
   }
 }
