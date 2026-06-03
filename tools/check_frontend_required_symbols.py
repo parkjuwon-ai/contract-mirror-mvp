@@ -4,6 +4,7 @@ import sys
 JS_FILES = [
     Path("app/static/js/constants.js"),
     Path("app/static/js/state.js"),
+    Path("app/static/js/apiClient.js"),
     Path("app/static/js/app.js"),
 ]
 
@@ -21,6 +22,7 @@ REQUIRED_SYMBOLS = [
     "function addEvent",
     "function goTo",
     "function handleAction",
+    "window.ContractMirrorApi",
 ]
 
 missing_files = [str(path) for path in JS_FILES if not path.exists()]
