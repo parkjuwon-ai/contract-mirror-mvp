@@ -12,6 +12,7 @@ JS_FILES = [
     Path("app/static/js/apiClient.js"),
     Path("app/static/js/actions.js"),
     Path("app/static/js/app.js"),
+    Path("app/static/js/bootstrap.js"),
 ]
 
 missing_files = [str(path) for path in HTML_FILES + JS_FILES if not path.exists()]

@@ -7,6 +7,7 @@ JS_FILES = [
     Path("app/static/js/apiClient.js"),
     Path("app/static/js/actions.js"),
     Path("app/static/js/app.js"),
+    Path("app/static/js/bootstrap.js"),
 ]
 
 REQUIRED_SYMBOLS = [
@@ -23,6 +24,7 @@ REQUIRED_SYMBOLS = [
     "function addEvent",
     "function goTo",
     "function handleAction",
+    "function setupControls",
     "window.ContractMirrorApi",
 ]
 
