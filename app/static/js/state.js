@@ -105,6 +105,21 @@ function applyServiceSession(session) {
 }
 
 
+
+async function ensureServiceSession() {
+  if (state.serviceSession && state.serviceSession.id) {
+    return state.serviceSession;
+  }
+
+  const session = await ContractMirrorApi.createSession({
+    contractType: getApiContractType()
+  });
+
+  applyServiceSession(session);
+  return session;
+}
+
+
 function createPersistedSnapshot() {
   const snapshot = {};
   PERSISTED_STATE_KEYS.forEach((key) => {

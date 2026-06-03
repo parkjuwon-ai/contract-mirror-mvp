@@ -1,6 +1,50 @@
 // Contract Mirror frontend action handlers
 // Extracted from app.js without changing runtime behavior.
 
+
+function pickLocalFile({ accept = "" } = {}) {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    let settled = false;
+
+    input.type = "file";
+    input.accept = accept;
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    input.style.top = "-9999px";
+
+    const cleanup = () => {
+      if (input.parentNode) input.parentNode.removeChild(input);
+      window.removeEventListener("focus", handleFocus);
+    };
+
+    const finish = (file) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(file || null);
+    };
+
+    const handleFocus = () => {
+      setTimeout(() => {
+        if (!settled && (!input.files || input.files.length === 0)) {
+          finish(null);
+        }
+      }, 700);
+    };
+
+    input.addEventListener("change", () => {
+      finish(input.files && input.files[0] ? input.files[0] : null);
+    }, { once: true });
+
+    window.addEventListener("focus", handleFocus);
+
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+
 function handleAction(e) {
   const action = e.currentTarget.dataset.action;
   if (action === "copy-all-questions") {
@@ -58,7 +102,32 @@ function handleAction(e) {
         setToast(`세션 생성에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
       }
     },
-    "upload-contract": () => { addEvent("CONTRACT_UPLOADED", `file=${state.contractFile}`); goTo(NAVIGATION_TARGETS.LOCK); },
+    "upload-contract": async () => {
+      try {
+        const file = await pickLocalFile({
+          accept: ".pdf,.jpg,.jpeg,.png,.txt"
+        });
+
+        if (!file) {
+          setToast("계약서 선택이 취소되었습니다.");
+          return;
+        }
+
+        setToast("계약서를 업로드하고 해시를 생성하고 있습니다.");
+
+        const session = await ensureServiceSession();
+        const updatedSession = await ContractMirrorApi.uploadContract(session.id, file);
+
+        applyServiceSession(updatedSession);
+        addEvent("CONTRACT_UPLOADED", `file=${state.contractFile}, contract_hash=${state.contractHash}`);
+        setToast("계약서가 등록되었습니다.");
+        goTo(NAVIGATION_TARGETS.LOCK);
+      } catch (error) {
+        console.error("Upload contract failed", error);
+        addEvent("CONTRACT_UPLOAD_FAILED", error.message || "unknown_error");
+        setToast(`계약서 업로드에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
+      }
+    },
     "lock-contract": () => {
       state.contractor.verified = true;
       state.contractor.consent = true;
