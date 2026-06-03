@@ -171,5 +171,11 @@ const PERSISTED_STATE_KEYS = Object.freeze([
   "processingIndex",
   "progress",
   "contractRecordOpen",
-  "events"
+  "events",
+  "serviceSession",
+  "serviceReport",
+  "serviceVerification",
+  "contractLocked",
+  "reportId",
+  "verificationId",
 ]);

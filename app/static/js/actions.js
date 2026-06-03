@@ -45,7 +45,7 @@ function pickLocalFile({ accept = "" } = {}) {
 }
 
 
-function handleAction(e) {
+async function handleAction(e) {
   const action = e.currentTarget.dataset.action;
   if (action === "copy-all-questions") {
     copyAllQuestions();
@@ -134,7 +134,16 @@ function handleAction(e) {
 
         setToast("계약서를 고정하고 있습니다.");
 
-        const updatedSession = await ContractMirrorApi.lockContract(session.id);
+        const lockedSession = await ContractMirrorApi.lockContract(session.id);
+        const updatedSession = await ContractMirrorApi.updateParticipant(
+          lockedSession.id,
+          "contractor",
+          {
+            verified: true,
+            consent: true,
+            rejected: false
+          }
+        );
 
         applyServiceSession(updatedSession);
 
@@ -164,24 +173,97 @@ function handleAction(e) {
 
   const verifyRole = roleAction("verify-");
   if (verifyRole) {
-    state[verifyRole].verified = true;
-    addEvent("PARTICIPANT_VERIFIED", `${verifyRole}=Demo Verified`);
-    render();
+    if (!state[verifyRole]) {
+      setToast("지원하지 않는 참여자 역할입니다.");
+      return;
+    }
+
+    try {
+      setToast("본인확인 상태를 저장하고 있습니다.");
+
+      const session = await ensureServiceSession();
+      const updatedSession = await ContractMirrorApi.updateParticipant(
+        session.id,
+        verifyRole,
+        { verified: true }
+      );
+
+      applyServiceSession(updatedSession);
+      addEvent("PARTICIPANT_VERIFIED", `${verifyRole}=Demo Verified`);
+      setToast("본인확인이 완료되었습니다.");
+      render();
+    } catch (error) {
+      console.error("Participant verification failed", error);
+      addEvent("PARTICIPANT_VERIFY_FAILED", `${verifyRole}=${error.message || "unknown_error"}`);
+      setToast(`본인확인 저장에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
+    }
+
     return;
   }
+
   const consentRole = roleAction("consent-");
   if (consentRole) {
-    state[consentRole].consent = true;
-    state[consentRole].rejected = false;
-    addEvent("CONSENT_COMPLETED", `${consentRole}_recording=true, ai_analysis=true, hash_record=true`);
-    render();
+    if (!state[consentRole]) {
+      setToast("지원하지 않는 참여자 역할입니다.");
+      return;
+    }
+
+    try {
+      setToast("동의 상태를 저장하고 있습니다.");
+
+      const session = await ensureServiceSession();
+      const updatedSession = await ContractMirrorApi.updateParticipant(
+        session.id,
+        consentRole,
+        {
+          consent: true,
+          rejected: false
+        }
+      );
+
+      applyServiceSession(updatedSession);
+      addEvent("CONSENT_COMPLETED", `${consentRole}_recording=true, ai_analysis=true, hash_record=true`);
+      setToast("동의 상태가 저장되었습니다.");
+      render();
+    } catch (error) {
+      console.error("Participant consent failed", error);
+      addEvent("CONSENT_SAVE_FAILED", `${consentRole}=${error.message || "unknown_error"}`);
+      setToast(`동의 상태 저장에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
+    }
+
     return;
   }
+
   const rejectRole = roleAction("reject-");
   if (rejectRole) {
-    state[rejectRole].consent = false;
-    state[rejectRole].rejected = true;
-    addEvent("CONSENT_REJECTED", `${rejectRole}_recording=false, ai_analysis=false`);
-    render();
+    if (!state[rejectRole]) {
+      setToast("지원하지 않는 참여자 역할입니다.");
+      return;
+    }
+
+    try {
+      setToast("거절 상태를 저장하고 있습니다.");
+
+      const session = await ensureServiceSession();
+      const updatedSession = await ContractMirrorApi.updateParticipant(
+        session.id,
+        rejectRole,
+        {
+          consent: false,
+          rejected: true
+        }
+      );
+
+      applyServiceSession(updatedSession);
+      addEvent("CONSENT_REJECTED", `${rejectRole}_recording=false, ai_analysis=false`);
+      setToast("동의 거절 상태가 저장되었습니다.");
+      render();
+    } catch (error) {
+      console.error("Participant rejection failed", error);
+      addEvent("CONSENT_REJECT_SAVE_FAILED", `${rejectRole}=${error.message || "unknown_error"}`);
+      setToast(`거절 상태 저장에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
+    }
+
+    return;
   }
 }

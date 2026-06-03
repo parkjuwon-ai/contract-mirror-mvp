@@ -103,6 +103,12 @@ function applyServiceSession(session) {
     if (session.verification.id) state.verificationId = session.verification.id;
     state.serviceVerification = deepClone(session.verification);
   }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(createPersistedSnapshot()));
+  } catch (error) {
+    console.warn("Failed to persist service session", error);
+  }
 }
 
 
@@ -110,6 +116,18 @@ function applyServiceSession(session) {
 async function ensureServiceSession() {
   if (state.serviceSession && state.serviceSession.id) {
     return state.serviceSession;
+  }
+
+  if (state.sessionId) {
+    try {
+      const existingSession = await ContractMirrorApi.getSession(state.sessionId);
+      if (existingSession && existingSession.id) {
+        applyServiceSession(existingSession);
+        return existingSession;
+      }
+    } catch (error) {
+      console.warn("Failed to restore service session from server", error);
+    }
   }
 
   const session = await ContractMirrorApi.createSession({
