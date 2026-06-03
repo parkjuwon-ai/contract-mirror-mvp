@@ -128,14 +128,31 @@ function handleAction(e) {
         setToast(`계약서 업로드에 실패했습니다. ${error.message || "잠시 후 다시 시도해주세요."}`);
       }
     },
-    "lock-contract": () => {
-      state.contractor.verified = true;
-      state.contractor.consent = true;
-      state.contractor.rejected = false;
-      addEvent("CONTRACT_HASH_CREATED", `contract_hash=${state.contractHash}`);
-      addEvent("CONTRACT_STATUS", "locked_before_recording");
-      addEvent("HOST_READY", "contractor_identity_and_consent=preconfirmed_demo");
-      goTo(NAVIGATION_TARGETS.INVITE);
+    "lock-contract": async () => {
+      try {
+        const session = await ensureServiceSession();
+
+        setToast("계약서를 고정하고 있습니다.");
+
+        const updatedSession = await ContractMirrorApi.lockContract(session.id);
+
+        applyServiceSession(updatedSession);
+
+        // 기존 데모 흐름 유지: 호스트/계약자 본인확인과 동의는 사전 완료 처리
+        state.contractor.verified = true;
+        state.contractor.consent = true;
+        state.contractor.rejected = false;
+
+        addEvent("CONTRACT_HASH_CREATED", `contract_hash=${state.contractHash}`);
+        addEvent("CONTRACT_STATUS", "locked_before_recording");
+        addEvent("HOST_READY", "contractor_identity_and_consent=preconfirmed_demo");
+        setToast("계약서가 고정되었습니다.");
+        goTo(NAVIGATION_TARGETS.INVITE);
+      } catch (error) {
+        console.error("Lock contract failed", error);
+        addEvent("CONTRACT_LOCK_FAILED", error.message || "unknown_error");
+        setToast(`계약서 고정에 실패했습니다. ${error.message || "계약서를 먼저 업로드해주세요."}`);
+      }
     },
     "toggle-contract-record": () => { state.contractRecordOpen = !state.contractRecordOpen; render(); },
     "start-recording": () => { if (readyToRecord()) { addEvent("RECORDING_STARTED", "all_identity_and_consent_completed=true"); state.recording = true; goTo(NAVIGATION_TARGETS.RECORDING); } },

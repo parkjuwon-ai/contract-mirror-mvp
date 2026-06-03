@@ -71,6 +71,7 @@ function applyServiceSession(session) {
   if (session.contract && typeof session.contract === "object") {
     if (session.contract.fileName) state.contractFile = session.contract.fileName;
     if (session.contract.hash) state.contractHash = session.contract.hash;
+    if ("locked" in session.contract) state.contractLocked = Boolean(session.contract.locked);
   }
 
   if (session.recording && typeof session.recording === "object") {
