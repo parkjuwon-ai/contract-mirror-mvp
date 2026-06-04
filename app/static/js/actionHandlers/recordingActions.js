@@ -40,6 +40,22 @@ async function handleStopRecordingAction() {
 
     applyServiceSession(analyzedSession);
 
+    const analysisStatus = await ContractMirrorApi.getAnalysisStatus(session.id);
+
+    if (analysisStatus) {
+      addEvent(
+        "ANALYSIS_STATUS_SYNCED",
+        `status=${analysisStatus.status}, progress=${analysisStatus.progress}`
+      );
+
+      if (state.serviceSession && state.serviceSession.analysis) {
+        state.serviceSession.analysis = {
+          ...state.serviceSession.analysis,
+          ...analysisStatus
+        };
+      }
+    }
+
     state.recording = false;
 
     addEvent(
