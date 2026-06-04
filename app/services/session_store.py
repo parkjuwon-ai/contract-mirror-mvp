@@ -8,6 +8,13 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from app.db import SessionLocal, init_db
+from app.repositories.session_repository import (
+    create_default_participants as db_create_default_participants,
+    create_session as db_create_session,
+    get_session_aggregate as db_get_session_aggregate,
+)
+
 
 KST = ZoneInfo("Asia/Seoul")
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -80,6 +87,30 @@ def _new_report_id() -> str:
 
 def _new_verification_id() -> str:
     return f"VER-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _create_db_session(session_id: str, contract_type: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        db_create_session(
+            db,
+            session_id=session_id,
+            contract_type=contract_type,
+            status="created",
+        )
+        db_create_default_participants(db, session_id=session_id)
+        db.commit()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
+def _get_db_session(session_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
 
 
 def create_session(contract_type: str | None = None) -> dict:
@@ -158,10 +189,20 @@ def create_session(contract_type: str | None = None) -> dict:
 
     _SESSIONS[session_id] = session
     _persist_store()
-    return _copy(session)
+
+    db_session = _create_db_session(
+        session_id=session_id,
+        contract_type=session["contractType"],
+    )
+
+    return _copy(db_session or session)
 
 
 def get_session(session_id: str) -> dict | None:
+    db_session = _get_db_session(session_id)
+    if db_session:
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
