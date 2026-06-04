@@ -19,6 +19,27 @@ def to_iso(value: Optional[datetime]) -> Optional[str]:
     return value.isoformat(timespec="seconds")
 
 
+def get_existing_file_record(
+    db: Session,
+    *,
+    session_id: str,
+    file_type: str,
+    original_name: str,
+    sha256_hash: str,
+) -> Optional[FileModel]:
+    statement = (
+        select(FileModel)
+        .where(FileModel.session_id == session_id)
+        .where(FileModel.file_type == file_type)
+        .where(FileModel.original_name == original_name)
+        .where(FileModel.sha256_hash == sha256_hash)
+        .order_by(FileModel.uploaded_at.desc())
+        .limit(1)
+    )
+
+    return db.scalars(statement).first()
+
+
 def create_file_record(
     db: Session,
     *,
@@ -31,6 +52,17 @@ def create_file_record(
     sha256_hash: str,
     storage_path: str,
 ) -> FileModel:
+    existing = get_existing_file_record(
+        db,
+        session_id=session_id,
+        file_type=file_type,
+        original_name=original_name,
+        sha256_hash=sha256_hash,
+    )
+
+    if existing is not None:
+        return existing
+
     file_record = FileModel(
         id=file_id,
         session_id=session_id,
@@ -47,7 +79,6 @@ def create_file_record(
     db.flush()
 
     return file_record
-
 
 def get_files_by_session(db: Session, session_id: str) -> list[FileModel]:
     statement = (
