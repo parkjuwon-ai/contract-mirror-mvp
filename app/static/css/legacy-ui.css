@@ -11,10 +11,6 @@
  * - 향후 화면 단위로 사용 여부를 확인한 뒤 점진적으로 정리한다.
  */
 
-/* Legacy UI styles preserved from earlier MVP iterations.
-   Do not edit during demo stabilization unless absolutely necessary.
-*/
-
 :root {
   --bg: #f7f4ec;
   --surface: #ffffff;
