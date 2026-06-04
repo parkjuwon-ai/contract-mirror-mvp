@@ -11,7 +11,7 @@ from app.api.sessions import router as sessions_router
 from app.api.verifications import router as verifications_router
 
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "v37-split-session-contract-actions"
+APP_VERSION = "v38-split-participant-actions"
 
 Device = Literal["host", "contractor", "explainer"]
 Step = Literal[
