@@ -189,6 +189,103 @@ def empty_verification_payload() -> dict:
     }
 
 
+
+
+def get_participant(
+    db: Session,
+    *,
+    session_id: str,
+    role: str,
+) -> Optional[ParticipantModel]:
+    statement = (
+        select(ParticipantModel)
+        .where(ParticipantModel.session_id == session_id)
+        .where(ParticipantModel.role == role)
+        .limit(1)
+    )
+
+    return db.scalars(statement).first()
+
+
+def update_participant_state(
+    db: Session,
+    *,
+    session_id: str,
+    role: str,
+    patch: dict,
+) -> Optional[ParticipantModel]:
+    participant = get_participant(
+        db,
+        session_id=session_id,
+        role=role,
+    )
+
+    if participant is None:
+        return None
+
+    now = utc_now()
+
+    if "name" in patch:
+        participant.name = patch.get("name")
+
+    if "verified" in patch:
+        participant.verified = bool(patch.get("verified"))
+        if participant.verified and participant.verified_at is None:
+            participant.verified_at = now
+        if not participant.verified:
+            participant.verified_at = None
+
+    if "consent" in patch:
+        participant.consent = bool(patch.get("consent"))
+        if participant.consent and participant.consented_at is None:
+            participant.consented_at = now
+        if not participant.consent:
+            participant.consented_at = None
+
+    if "rejected" in patch:
+        participant.rejected = bool(patch.get("rejected"))
+
+    if participant.rejected:
+        participant.consent = False
+        participant.consented_at = None
+
+    participant.updated_at = now
+
+    db.flush()
+
+    return participant
+
+
+def participants_are_ready(db: Session, session_id: str) -> bool:
+    participants = get_participants(db, session_id)
+
+    if len(participants) < 2:
+        return False
+
+    by_role = {participant.role: participant for participant in participants}
+
+    contractor = by_role.get("contractor")
+    explainer = by_role.get("explainer")
+
+    if contractor is None or explainer is None:
+        return False
+
+    return all(
+        [
+            contractor.verified,
+            contractor.consent,
+            not contractor.rejected,
+            explainer.verified,
+            explainer.consent,
+            not explainer.rejected,
+        ]
+    )
+
+
+def participants_have_rejection(db: Session, session_id: str) -> bool:
+    return any(participant.rejected for participant in get_participants(db, session_id))
+
+
 def participant_to_dict(participant: ParticipantModel) -> dict:
     return {
         "role": participant.role,

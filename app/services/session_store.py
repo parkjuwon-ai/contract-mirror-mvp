@@ -14,6 +14,9 @@ from app.repositories.session_repository import (
     create_default_participants as db_create_default_participants,
     create_session as db_create_session,
     get_session_aggregate as db_get_session_aggregate,
+    participants_are_ready as db_participants_are_ready,
+    participants_have_rejection as db_participants_have_rejection,
+    update_participant_state as db_update_participant_state,
     update_session_status as db_update_session_status,
 )
 
@@ -177,6 +180,53 @@ def _lock_db_contract(session_id: str) -> dict | None:
             session_id=session_id,
             status="contract_locked",
         )
+        db.commit()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
+def _update_db_participant(
+    session_id: str,
+    role: str,
+    patch: dict,
+) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        current = db_get_session_aggregate(db, session_id)
+        if current is None:
+            return None
+
+        participant = db_update_participant_state(
+            db,
+            session_id=session_id,
+            role=role,
+            patch=patch,
+        )
+
+        if participant is None:
+            raise ValueError("지원하지 않는 참여자 역할입니다.")
+
+        if db_participants_have_rejection(db, session_id):
+            db_update_session_status(
+                db,
+                session_id=session_id,
+                status="participants_pending",
+            )
+        elif db_participants_are_ready(db, session_id):
+            db_update_session_status(
+                db,
+                session_id=session_id,
+                status="participants_ready",
+            )
+        else:
+            db_update_session_status(
+                db,
+                session_id=session_id,
+                status="participants_pending",
+            )
+
         db.commit()
 
     with SessionLocal() as db:
@@ -362,18 +412,56 @@ def lock_contract(session_id: str) -> dict | None:
     return _copy(session)
 
 def update_participant(session_id: str, role: str, patch: dict) -> dict | None:
+    db_session = _update_db_participant(
+        session_id=session_id,
+        role=role,
+        patch=patch,
+    )
+
+    if db_session is not None:
+        session = _SESSIONS.get(session_id)
+        if session is not None:
+            if role not in session["participants"]:
+                raise ValueError("지원하지 않는 참여자 역할입니다.")
+
+            participant = session["participants"][role]
+
+            if "name" in patch:
+                participant["name"] = patch.get("name")
+
+            if "verified" in patch:
+                participant["verified"] = bool(patch["verified"])
+                participant["verifiedAt"] = db_session["participants"][role]["verifiedAt"]
+
+            if "consent" in patch:
+                participant["consent"] = bool(patch["consent"])
+                participant["consentedAt"] = db_session["participants"][role]["consentedAt"]
+
+            if "rejected" in patch:
+                participant["rejected"] = bool(patch["rejected"])
+
+            if participant["rejected"]:
+                participant["consent"] = False
+                participant["consentedAt"] = None
+
+            session["status"] = db_session["status"]
+            session["updatedAt"] = now_iso()
+            _persist_store()
+
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
 
-    if role not in ("contractor", "explainer"):
+    if role not in session["participants"]:
         raise ValueError("지원하지 않는 참여자 역할입니다.")
 
     participant = session["participants"][role]
     now = now_iso()
 
     if "name" in patch:
-        participant["name"] = patch["name"]
+        participant["name"] = patch.get("name")
 
     if "verified" in patch:
         participant["verified"] = bool(patch["verified"])
@@ -386,10 +474,16 @@ def update_participant(session_id: str, role: str, patch: dict) -> dict | None:
     if "rejected" in patch:
         participant["rejected"] = bool(patch["rejected"])
 
+    if participant["rejected"]:
+        participant["consent"] = False
+        participant["consentedAt"] = None
+
     contractor = session["participants"]["contractor"]
     explainer = session["participants"]["explainer"]
 
-    if (
+    if contractor["rejected"] or explainer["rejected"]:
+        session["status"] = "participants_pending"
+    elif (
         contractor["verified"]
         and contractor["consent"]
         and explainer["verified"]
@@ -402,7 +496,6 @@ def update_participant(session_id: str, role: str, patch: dict) -> dict | None:
     session["updatedAt"] = now
     _persist_store()
     return _copy(session)
-
 
 def upload_recording(
     session_id: str,
