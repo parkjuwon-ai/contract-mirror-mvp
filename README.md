@@ -1,10 +1,20 @@
 # Contract Mirror MVP
 
-계약미러는 계약 현장에서 녹취 발언과 계약서 조항을 비교해 **불일치 후보**, **확인 질문**, **검증 가능한 리포트**를 보여주는 해커톤용 MVP입니다.
+Contract Mirror는 계약 현장에서 설명된 녹취 내용과 실제 계약서 조항을 비교해 **불일치 후보**, **확인 질문**, **분석 리포트**, **QR 검증 카드**를 생성하는 AI + DID/Chain 기반 계약 설명 검증 MVP입니다.
 
-현재 버전은 `v34-route-render-bugfix`입니다. v31 화면 이동 안정화 기준 위에서 상태 기본값, 저장/복원, 초기화 책임을 정리해 localStorage와 화면 상태 꼬임을 줄였습니다.
+이 MVP는 해커톤 시연을 위해 모바일 현장 플로우, 심사위원 검증 콘솔, DB-backed 세션/리포트/검증 흐름을 하나의 FastAPI 웹앱으로 구현한 버전입니다.
 
-## 빠른 실행
+## Current MVP Status
+
+- FastAPI 기반 웹앱
+- SQLite DB-backed session/report/verification flow
+- 계약서/녹취 파일 메타데이터 저장
+- AI 분석 결과 및 검증 카드 생성
+- 심사위원용 검증 콘솔 제공
+- 일반 사용자 모바일 플로우와 발표자/심사위원 검증 화면 분리
+- CSS legacy baseline + service-ready override layer 정리 완료
+
+## Quick Start
 
 ```bash
 source .venv/bin/activate
@@ -30,66 +40,164 @@ http://127.0.0.1:8000
 | `/verify/demo` | QR 검증 화면 |
 | `/health` | 서버 상태 확인 |
 
+## 주요 구현 범위
 
-## 안정화 기준 문서
+### 사용자 플로우
 
-| 문서 | 용도 |
-|---|---|
-| `docs/FLOW_LOCK.md` | 발표용 핵심 플로우, 화면 목록, 버튼 이동 경로 고정 |
-| `tools/check_frontend_actions.py` | 화면에 노출된 `data-action`과 JS 핸들러 누락 여부 점검 |
-| `docs/STATE_LOCK.md` | v32 기준 기본 상태, 저장 상태, 초기화 원칙 고정 |
+- 계약자 / 설명자 역할 분리
+- 계약서 업로드
+- 양측 본인확인 및 동의 상태 관리
+- 녹취 업로드 및 처리 흐름
+- AI 분석 결과 화면
+- 사후 확인 문서 선택 흐름
+- 최종 QR 검증 카드 생성
+
+### DB-backed MVP Flow
+
+현재 MVP는 SQLite 기반으로 다음 데이터를 저장하고 조회합니다.
+
+- 세션 상태
+- 계약서 파일 메타데이터
+- 녹취 파일 메타데이터
+- 분석 작업 상태
+- 리포트 데이터
+- 검증 카드 데이터
+- 감사 로그성 이벤트
+
+### 심사위원 검증 화면
+
+`/judge` 화면에서는 발표 및 심사용으로 다음 상태를 한 화면에서 확인할 수 있습니다.
+
+- 세션 진행 상태
+- 계약서/녹취/리포트 해시 상태
+- AI 분석 결과
+- 위험도 요약
+- QR 검증 카드 상태
+- DB-backed 검증 흐름
 
 ## 현재 파일 구조
 
 ```text
 app/
-  main.py                  # FastAPI 라우팅/부트 상태 주입
-  templates/index.html      # 단일 화면 템플릿
-  static/css/legacy-ui.css  # 기존 누적 UI 스타일, 가급적 수정 금지
-  static/css/style.css      # 현재 최종 override CSS, 급한 UI 수정은 여기서만
-  static/js/app.js          # 데모 상태/화면 렌더링/화면 이동 로직
+  main.py                     # FastAPI app entrypoint
+  api/                        # session/report/verification API routes
+  repositories/               # SQLite repository layer
+  services/                   # session store and service helpers
+  models.py                   # DB models
+  db.py                       # SQLite DB setup
+  templates/index.html         # single-page template shell
+  static/css/legacy-ui.css     # frozen legacy UI baseline
+  static/css/style.css         # service-ready MVP override layer
+  static/js/                   # modular frontend scripts
 
 docs/
-  DEVELOPMENT_RULES.md      # 앞으로 수정할 때 지킬 기준
-  PROJECT_STRUCTURE.md      # 코드 구조 설명
-  history/                  # 과거 패치/가이드 기록
+  CSS 관련 정리 문서
+  service-ready MVP 상태 문서
+  기존 UI/플로우 안정화 기록
 
 tools/
-  apply_v18_cleanup_local.sh
   health_check.sh
+  smoke_test_db_flow.py
+  test_session_repository.py
+  test_file_idempotency.py
+  test_file_audit_repositories.py
+  test_analysis_report_verification_repositories.py
+  test_full_session_aggregate.py
 ```
 
-## 수정 원칙
+## CSS 정리 상태
 
-1. **급한 UI 수정은 `app/static/css/style.css` 하단에서만 합니다.**  
-   `legacy-ui.css`는 과거 스타일이 누적된 기반 파일이라, 여기저기 수정하면 다시 꼬일 가능성이 큽니다.
+현재 CSS는 다음 구조로 동작합니다.
 
-2. **HTML 구조는 최대한 유지합니다.**  
-   현재 JS가 `#screen`, `.phone-frame`, `.phone-screen`, `#trustPanel`, `#controlPanel`에 의존합니다.
-
-3. **화면 이동은 `goTo(step)` 중심으로 처리합니다.**  
-   버튼 핸들러에서 직접 `state.step`을 바꾸지 않고, `goTo()`가 타이머 정리·렌더링·스크롤 초기화를 맡도록 유지합니다.
-
-4. **상태 기본값은 `BASE_STATE`와 `normalizeSavedState()`를 기준으로 관리합니다.**  
-   localStorage에 저장할 값은 `PERSISTED_STATE_KEYS`에 포함된 값으로 제한하고, 토스트·모달·타이머 같은 임시 UI 상태는 저장하지 않습니다.
-
-4. **로컬 중복 폴더는 삭제하지 말고 `_archive/`로 보관 이동합니다.**  
-   아래 명령을 사용하세요.
-
-```bash
-bash tools/apply_v18_cleanup_local.sh
+```text
+index.html
+  └── style.css
+        └── legacy-ui.css
 ```
 
-## 제출 전 체크
+- `legacy-ui.css`는 이전 MVP 개발 과정에서 누적된 기존 UI 스타일 기준 파일입니다.
+- `style.css`는 service-ready MVP 화면을 위한 active override layer입니다.
+- 대회/시연 전 안정성을 위해 `legacy-ui.css`는 삭제하지 않고 frozen baseline으로 유지합니다.
+- JS에서 렌더링되는 class가 많기 때문에 class rename이나 대량 삭제는 하지 않습니다.
+
+관련 문서:
+
+| 문서 | 용도 |
+|---|---|
+| `docs/css_inventory.md` | CSS 파일 구조 및 진입점 정리 |
+| `docs/css_class_usage_map.md` | JS/템플릿 class 사용 위치 정리 |
+| `docs/css_override_layer_map.md` | style.css override layer 구조 정리 |
+| `docs/css_cleanup_candidates.md` | 향후 CSS 정리 후보 기록 |
+
+## 검증 방법
+
+### Health Check
 
 ```bash
 bash tools/health_check.sh
 ```
 
-이 스크립트는 실행에 방해되는 캐시, 중복 CSS 파일, 주요 파일 누락 여부, JS 문법, 프론트엔드 액션 누락 여부를 빠르게 확인합니다.
+이 스크립트는 주요 파일 존재 여부, 중복 CSS 파일, 캐시 파일, JS 액션 누락, 필수 심볼 등을 확인합니다.
 
+### DB-backed Smoke Test
 
-## v33 Flow Bugfix
-- UI step is now treated as route/tab-local state to prevent participant tabs from resetting the host flow.
-- `go-mobile-report` and `go-report` now mark AI processing complete before navigating to the report.
-- Storage sync updates shared consent/report data without forcing the current tab to another screen.
+서버를 먼저 실행합니다.
+
+```bash
+uvicorn app.main:app --reload
+```
+
+다른 터미널에서 smoke test를 실행합니다.
+
+```bash
+python tools/smoke_test_db_flow.py
+```
+
+성공 시 다음 흐름이 확인됩니다.
+
+```text
+session: report_ready
+analysis: completed
+verification: valid
+```
+
+### Repository Test Scripts
+
+```bash
+python tools/test_session_repository.py
+python tools/test_file_idempotency.py
+python tools/test_file_audit_repositories.py
+python tools/test_analysis_report_verification_repositories.py
+python tools/test_full_session_aggregate.py
+```
+
+## 개발 및 수정 원칙
+
+1. 대회/시연 전에는 `legacy-ui.css`를 삭제하지 않습니다.
+2. 급한 UI 수정은 `style.css`에서만 진행합니다.
+3. JavaScript에서 렌더링하는 class 이름은 함부로 변경하지 않습니다.
+4. DB-backed flow는 `tools/smoke_test_db_flow.py`로 확인합니다.
+5. 로컬 캐시나 `__pycache__`는 커밋하지 않습니다.
+6. 큰 리팩터링은 별도 브랜치에서 진행합니다.
+
+## Local Cleanup
+
+로컬 캐시나 런타임 산출물을 정리할 때는 아래 명령을 사용합니다.
+
+```bash
+bash tools/apply_v18_cleanup_local.sh
+```
+
+## MVP Scope
+
+이 저장소는 해커톤 제출 및 시연을 위한 service-ready MVP입니다.
+
+실제 서비스화를 위해서는 향후 다음 작업이 필요합니다.
+
+- PostgreSQL 등 운영 DB 전환
+- 파일 업로드 보안 강화
+- 인증/권한 체계 보강
+- 실제 AI 분석 모델 또는 외부 API 연동
+- DID/Chain 검증 로직 고도화
+- 배포 환경 구성
+- 자동화 테스트 및 CI 구성
