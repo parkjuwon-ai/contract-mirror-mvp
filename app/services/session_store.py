@@ -9,6 +9,24 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from app.db import SessionLocal, init_db
+from app.repositories.analysis_repository import (
+    analysis_job_to_dict as db_analysis_job_to_dict,
+    create_analysis_job as db_create_analysis_job,
+    get_latest_analysis_job_by_session as db_get_latest_analysis_job_by_session,
+    update_analysis_job as db_update_analysis_job,
+)
+from app.repositories.report_repository import (
+    create_report as db_create_report,
+    create_report_mismatch as db_create_report_mismatch,
+    create_report_question as db_create_report_question,
+    get_report as db_get_report,
+    report_to_dict as db_report_to_dict,
+)
+from app.repositories.verification_repository import (
+    create_verification as db_create_verification,
+    get_verification as db_get_verification,
+    verification_to_dict as db_verification_to_dict,
+)
 from app.repositories.file_repository import create_file_record as db_create_file_record
 from app.repositories.session_repository import (
     create_default_participants as db_create_default_participants,
@@ -88,6 +106,18 @@ def _new_session_id() -> str:
 
 def _new_report_id() -> str:
     return f"RPT-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _new_analysis_job_id() -> str:
+    return f"JOB-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _new_mismatch_id() -> str:
+    return f"MM-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _new_question_id() -> str:
+    return f"Q-{uuid.uuid4().hex[:8].upper()}"
 
 
 def _new_verification_id() -> str:
@@ -269,6 +299,125 @@ def _upload_db_recording(
 
     with SessionLocal() as db:
         return db_get_session_aggregate(db, session_id)
+
+
+def _start_db_analysis(session_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        current = db_get_session_aggregate(db, session_id)
+        if current is None:
+            return None
+
+        if not current["recording"]["hash"]:
+            raise ValueError("녹취 업로드 후 분석할 수 있습니다.")
+
+        job_id = _new_analysis_job_id()
+        report_id = _new_report_id()
+        verification_id = _new_verification_id()
+
+        report_hash = make_hash(
+            f"{session_id}:{job_id}:{current['contract']['hash']}:{current['recording']['hash']}".encode("utf-8")
+        )
+
+        db_create_analysis_job(
+            db,
+            job_id=job_id,
+            session_id=session_id,
+            status="processing",
+            progress=50,
+        )
+        db_update_analysis_job(
+            db,
+            job_id=job_id,
+            status="completed",
+            progress=100,
+        )
+
+        db_create_report(
+            db,
+            report_id=report_id,
+            session_id=session_id,
+            analysis_job_id=job_id,
+            report_hash=report_hash,
+            risk_level="high",
+            summary="설명 내용과 계약 조항 사이에 중요한 불일치 후보가 발견되었습니다.",
+        )
+
+        db_create_report_mismatch(
+            db,
+            mismatch_id=_new_mismatch_id(),
+            report_id=report_id,
+            title="수익 보장성 발언과 면책 조항의 불일치 후보",
+            risk_level="high",
+            transcript_text="예상 수익은 안정적으로 보장된다고 설명된 후보 발언입니다.",
+            contract_text="계약서에는 수익을 보장하지 않는다는 면책 조항이 포함되어 있습니다.",
+            basis="녹취 발언 / 계약서 조항",
+            display_order=1,
+        )
+
+        db_create_report_question(
+            db,
+            question_id=_new_question_id(),
+            report_id=report_id,
+            text="수익 보장처럼 들릴 수 있는 설명이 있었는지 다시 확인이 필요합니다.",
+            target="explainer",
+            display_order=1,
+        )
+
+        db_create_verification(
+            db,
+            verification_id=verification_id,
+            session_id=session_id,
+            report_id=report_id,
+            status="valid",
+            contract_hash=current["contract"]["hash"],
+            recording_hash=current["recording"]["hash"],
+            report_hash=report_hash,
+            risk_summary="높음",
+            tampered=False,
+        )
+
+        db_update_session_status(
+            db,
+            session_id=session_id,
+            status="report_ready",
+        )
+
+        db.commit()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
+def _get_db_analysis_status(session_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        job = db_get_latest_analysis_job_by_session(db, session_id)
+        if job is None:
+            return None
+        return db_analysis_job_to_dict(job)
+
+
+def _get_db_report(report_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        report = db_get_report(db, report_id)
+        if report is None:
+            return None
+        return db_report_to_dict(db, report)
+
+
+def _get_db_verification(verification_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        verification = db_get_verification(db, verification_id)
+        if verification is None:
+            return None
+        return db_verification_to_dict(verification)
 
 
 def create_session(contract_type: str | None = None) -> dict:
@@ -595,50 +744,75 @@ def upload_recording(
     return _copy(session)
 
 def start_analysis(session_id: str) -> dict | None:
+    db_session = _start_db_analysis(session_id)
+
+    if db_session is not None:
+        session = _SESSIONS.get(session_id)
+        if session is not None:
+            session["analysis"] = _copy(db_session["analysis"])
+            session["report"] = _copy(db_session["report"])
+            session["verification"] = _copy(db_session["verification"])
+            session["status"] = db_session["status"]
+            session["updatedAt"] = now_iso()
+
+            if db_session["report"]["id"]:
+                _REPORTS[db_session["report"]["id"]] = _copy(db_session["report"])
+
+            if db_session["verification"]["id"]:
+                verification_id = db_session["verification"]["id"]
+                _VERIFICATIONS[verification_id] = {
+                    "id": verification_id,
+                    "sessionId": db_session["id"],
+                    "status": db_session["verification"]["status"],
+                    "contractHash": db_session["contract"]["hash"],
+                    "recordingHash": db_session["recording"]["hash"],
+                    "reportHash": db_session["report"]["hash"],
+                    "createdAt": db_session["verification"]["verifiedAt"],
+                    "verifiedAt": db_session["verification"]["verifiedAt"],
+                    "riskSummary": "높음",
+                    "tampered": False,
+                }
+
+            _persist_store()
+
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
 
-    if not session["contract"]["hash"]:
-        raise ValueError("계약서가 필요합니다.")
-
     if not session["recording"]["hash"]:
-        raise ValueError("녹취 파일이 필요합니다.")
+        raise ValueError("녹취 업로드 후 분석할 수 있습니다.")
 
     now = now_iso()
+    job_id = _new_analysis_job_id()
     report_id = _new_report_id()
     verification_id = _new_verification_id()
 
-    mismatches = [
-        {
-            "id": "MM-001",
-            "title": "수익 보장성 발언과 면책 조항의 불일치 후보",
-            "riskLevel": "high",
-            "transcript": "예상 수익은 안정적으로 보장된다고 설명된 후보 발언입니다.",
-            "contract": "계약서에는 수익을 보장하지 않는다는 면책 조항이 포함되어 있습니다.",
-            "basis": "녹취 발언 / 계약서 조항",
-        }
-    ]
-
-    questions = [
-        {
-            "id": "Q-001",
-            "text": "수익 보장처럼 들릴 수 있는 설명이 있었는지 다시 확인이 필요합니다.",
-            "target": "explainer",
-        }
-    ]
-
-    report_hash = make_hash(f"{session_id}:{report_id}:{now}".encode("utf-8"))
-
     report = {
         "id": report_id,
-        "sessionId": session_id,
-        "hash": report_hash,
+        "hash": make_hash(f"{session_id}:{job_id}:{session['recording']['hash']}".encode("utf-8")),
         "riskLevel": "high",
         "summary": "설명 내용과 계약 조항 사이에 중요한 불일치 후보가 발견되었습니다.",
-        "mismatches": mismatches,
-        "questions": questions,
+        "mismatches": [
+            {
+                "id": _new_mismatch_id(),
+                "title": "수익 보장성 발언과 면책 조항의 불일치 후보",
+                "riskLevel": "high",
+                "transcript": "예상 수익은 안정적으로 보장된다고 설명된 후보 발언입니다.",
+                "contract": "계약서에는 수익을 보장하지 않는다는 면책 조항이 포함되어 있습니다.",
+                "basis": "녹취 발언 / 계약서 조항",
+            }
+        ],
+        "questions": [
+            {
+                "id": _new_question_id(),
+                "text": "수익 보장처럼 들릴 수 있는 설명이 있었는지 다시 확인이 필요합니다.",
+                "target": "explainer",
+            }
+        ],
         "createdAt": now,
+        "sessionId": session_id,
     }
 
     verification = {
@@ -647,62 +821,65 @@ def start_analysis(session_id: str) -> dict | None:
         "status": "valid",
         "contractHash": session["contract"]["hash"],
         "recordingHash": session["recording"]["hash"],
-        "reportHash": report_hash,
+        "reportHash": report["hash"],
         "createdAt": now,
         "verifiedAt": now,
         "riskSummary": "높음",
         "tampered": False,
     }
 
-    _REPORTS[report_id] = report
-    _VERIFICATIONS[verification_id] = verification
-
-    session["analysis"].update(
-        {
-            "jobId": f"JOB-{uuid.uuid4().hex[:8].upper()}",
-            "status": "completed",
-            "progress": 100,
-            "startedAt": now,
-            "completedAt": now,
-            "error": None,
-        }
-    )
-    session["report"].update(report)
-    session["verification"].update(
-        {
-            "id": verification_id,
-            "status": "valid",
-            "qrUrl": f"/verify/{verification_id}",
-            "publicUrl": f"/verify/{verification_id}",
-            "verifiedAt": now,
-        }
-    )
+    session["analysis"] = {
+        "jobId": job_id,
+        "status": "completed",
+        "progress": 100,
+        "startedAt": now,
+        "completedAt": now,
+        "error": None,
+    }
+    session["report"] = _copy(report)
+    session["verification"] = {
+        "id": verification_id,
+        "status": "valid",
+        "qrUrl": f"/verify/{verification_id}",
+        "publicUrl": f"/verify/{verification_id}",
+        "verifiedAt": now,
+    }
     session["status"] = "report_ready"
     session["updatedAt"] = now
+
+    _REPORTS[report_id] = _copy(report)
+    _VERIFICATIONS[verification_id] = verification
 
     _persist_store()
     return _copy(session)
 
-
 def get_analysis_status(session_id: str) -> dict | None:
+    db_analysis = _get_db_analysis_status(session_id)
+    if db_analysis is not None:
+        return _copy(db_analysis)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
     return _copy(session["analysis"])
 
-
 def get_report(report_id: str) -> dict | None:
+    db_report = _get_db_report(report_id)
+    if db_report is not None:
+        return _copy(db_report)
+
     report = _REPORTS.get(report_id)
     if not report:
         return None
     return _copy(report)
 
-
 def get_verification(verification_id: str) -> dict | None:
+    db_verification = _get_db_verification(verification_id)
+    if db_verification is not None:
+        return _copy(db_verification)
+
     verification = _VERIFICATIONS.get(verification_id)
     if not verification:
         return None
     return _copy(verification)
 
-
-_load_store()
