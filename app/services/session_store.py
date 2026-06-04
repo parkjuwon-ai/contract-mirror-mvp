@@ -233,6 +233,44 @@ def _update_db_participant(
         return db_get_session_aggregate(db, session_id)
 
 
+def _upload_db_recording(
+    session_id: str,
+    *,
+    file_name: str,
+    file_size: int,
+    mime_type: str | None,
+    file_hash: str,
+    duration_sec: int | None = None,
+) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        current = db_get_session_aggregate(db, session_id)
+        if current is None:
+            return None
+
+        db_create_file_record(
+            db,
+            file_id=_new_file_id(),
+            session_id=session_id,
+            file_type="recording",
+            original_name=file_name,
+            mime_type=mime_type,
+            size_bytes=file_size,
+            sha256_hash=file_hash,
+            storage_path=_storage_path_for(session_id, file_name),
+        )
+        db_update_session_status(
+            db,
+            session_id=session_id,
+            status="recording_uploaded",
+        )
+        db.commit()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
 def create_session(contract_type: str | None = None) -> dict:
     session_id = _new_session_id()
     now = now_iso()
@@ -504,7 +542,37 @@ def upload_recording(
     file_size: int,
     mime_type: str | None,
     file_hash: str,
+    duration_sec: int | None = None,
 ) -> dict | None:
+    db_session = _upload_db_recording(
+        session_id,
+        file_name=file_name,
+        file_size=file_size,
+        mime_type=mime_type,
+        file_hash=file_hash,
+        duration_sec=duration_sec,
+    )
+
+    if db_session is not None:
+        session = _SESSIONS.get(session_id)
+        if session is not None:
+            session["recording"].update(
+                {
+                    "fileName": file_name,
+                    "fileSize": file_size,
+                    "mimeType": mime_type,
+                    "hash": file_hash,
+                    "durationSec": duration_sec,
+                    "uploadedAt": db_session["recording"]["uploadedAt"],
+                    "status": "uploaded",
+                }
+            )
+            session["status"] = "recording_uploaded"
+            session["updatedAt"] = now_iso()
+            _persist_store()
+
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
@@ -516,7 +584,7 @@ def upload_recording(
             "fileSize": file_size,
             "mimeType": mime_type,
             "hash": file_hash,
-            "durationSec": None,
+            "durationSec": duration_sec,
             "uploadedAt": now,
             "status": "uploaded",
         }
@@ -525,7 +593,6 @@ def upload_recording(
     session["updatedAt"] = now
     _persist_store()
     return _copy(session)
-
 
 def start_analysis(session_id: str) -> dict | None:
     session = _SESSIONS.get(session_id)
