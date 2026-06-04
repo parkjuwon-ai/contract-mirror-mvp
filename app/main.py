@@ -11,7 +11,7 @@ from app.api.sessions import router as sessions_router
 from app.api.verifications import router as verifications_router
 
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "v40-split-result-screens"
+APP_VERSION = "v41-split-analysis-screens"
 
 Device = Literal["host", "contractor", "explainer"]
 Step = Literal[
