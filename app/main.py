@@ -1,13 +1,17 @@
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.api.reports import router as reports_router
+from app.api.sessions import router as sessions_router
+from app.api.verifications import router as verifications_router
+
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "v34-route-render-bugfix"
+APP_VERSION = "v45-split-judge-screen"
 
 Device = Literal["host", "contractor", "explainer"]
 Step = Literal[
@@ -36,6 +40,26 @@ Mode = Literal["user", "judge"]
 app = FastAPI(title=f"Contract Mirror UI {APP_VERSION}")
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+app.include_router(sessions_router)
+app.include_router(reports_router)
+app.include_router(verifications_router)
+
+
+@app.exception_handler(HTTPException)
+async def api_http_exception_handler(request: Request, exc: HTTPException):
+    if request.url.path.startswith('/api/'):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                'ok': False,
+                'error': {
+                    'code': 'HTTP_ERROR',
+                    'message': str(exc.detail),
+                },
+            },
+        )
+    return JSONResponse(status_code=exc.status_code, content={'detail': exc.detail})
 
 
 def render(

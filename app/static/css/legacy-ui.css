@@ -1,6 +1,15 @@
-/* Legacy UI styles preserved from earlier MVP iterations.
-   Do not edit during demo stabilization unless absolutely necessary.
-*/
+/*
+ * Contract Mirror legacy UI baseline
+ *
+ * 이 파일은 이전 MVP 개발 과정에서 누적된 기존 UI 스타일 기준 파일이다.
+ * 현재 service-ready MVP에서는 style.css가 이 파일을 import한 뒤 필요한 최신 스타일을
+ * 덮어쓰는 구조로 동작한다.
+ *
+ * 정리 원칙:
+ * - 전체 화면 회귀 확인 전에는 대량 삭제하지 않는다.
+ * - v12, v13, v15, v612 등 버전형 class는 JS 렌더링 화면에서 쓰일 수 있으므로 주의한다.
+ * - 향후 화면 단위로 사용 여부를 확인한 뒤 점진적으로 정리한다.
+ */
 
 :root {
   --bg: #f7f4ec;
@@ -2585,7 +2594,6 @@ body.judge-dashboard .judge-dashboard-actions {
 }
 
 
-
 /* =========================================================
    Contract Mirror v6.0 Step 1 Responsive Foundation
    Goal: mobile field flow + responsive audit/report shell.
@@ -5033,7 +5041,6 @@ body.judge-dashboard .phone-status-bar {
 }
 
 
-
 /* =========================================================
    v6.11 Report & Vault Interaction Polish
    - /report를 사후 검토용 문서형 워크스페이스로 정리
@@ -6111,7 +6118,6 @@ body.user-mode.addendum-screen .screen-card {
     padding-top: 18px !important;
   }
 }
-
 
 
    Scope: first mobile start screen only

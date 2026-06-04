@@ -109,6 +109,23 @@
       initialMode: "{{ initial_mode | default('user') }}"
     };
   </script>
+  <script src="/static/js/constants.js?v={{ app_version }}"></script>
+  <script src="/static/js/state.js?v={{ app_version }}"></script>
+  <script src="/static/js/apiClient.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/sessionActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/contractActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/participantActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/recordingActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/resultActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actionHandlers/miscActions.js?v={{ app_version }}"></script>
+  <script src="/static/js/actions.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/contractFlowScreens.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/participantScreens.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/analysisScreens.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/resultScreens.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/supportScreens.js?v={{ app_version }}"></script>
+  <script src="/static/js/screens/judgeScreens.js?v={{ app_version }}"></script>
   <script src="/static/js/app.js?v={{ app_version }}"></script>
+  <script src="/static/js/bootstrap.js?v={{ app_version }}"></script>
 </body>
 </html>

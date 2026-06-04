@@ -10,18 +10,38 @@ __pycache__/
 .venv/
 venv/
 env/
-
 # OS / editor
 .DS_Store
 .vscode/
 .idea/
-
 # Local archives / backups
 _archive/
 _backups/
 app_backup_before_ui_fix/
 v14_build/
 contract-mirror-mvp/
-
 # Runtime / generated files
 *.log
+# Environment variables
+.env
+.env.*
+!.env.example
+# Upload / storage runtime files
+uploads/
+storage/
+tmp/
+temp/
+# macOS zip metadata
+__MACOSX/
+._*
+# Test / coverage
+.coverage
+htmlcov/
+coverage/
+# Local database
+*.sqlite3
+*.db
+# Frontend build artifacts
+dist/
+build/
+node_modules/
