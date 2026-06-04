@@ -2594,7 +2594,6 @@ body.judge-dashboard .judge-dashboard-actions {
 }
 
 
-
 /* =========================================================
    Contract Mirror v6.0 Step 1 Responsive Foundation
    Goal: mobile field flow + responsive audit/report shell.
@@ -5042,7 +5041,6 @@ body.judge-dashboard .phone-status-bar {
 }
 
 
-
 /* =========================================================
    v6.11 Report & Vault Interaction Polish
    - /report를 사후 검토용 문서형 워크스페이스로 정리
@@ -6120,7 +6118,6 @@ body.user-mode.addendum-screen .screen-card {
     padding-top: 18px !important;
   }
 }
-
 
 
    Scope: first mobile start screen only
