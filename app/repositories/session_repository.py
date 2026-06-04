@@ -7,6 +7,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import ParticipantModel, SessionModel
+from app.repositories.analysis_repository import analysis_job_to_dict, get_latest_analysis_job_by_session
+from app.repositories.file_repository import get_latest_file_by_type
+from app.repositories.report_repository import get_latest_report_by_session, report_to_dict
+from app.repositories.verification_repository import get_latest_verification_by_session, verification_to_dict
 
 
 def utc_now() -> datetime:
@@ -85,6 +89,85 @@ def get_participants(db: Session, session_id: str) -> list[ParticipantModel]:
     return list(db.scalars(statement).all())
 
 
+
+
+def file_record_to_session_file(file_record, *, locked: bool | None = None, status: str | None = None) -> dict:
+    if file_record is None:
+        return {}
+
+    payload = {
+        "fileName": file_record.original_name,
+        "fileSize": file_record.size_bytes,
+        "mimeType": file_record.mime_type,
+        "hash": file_record.sha256_hash,
+        "uploadedAt": to_iso(file_record.uploaded_at),
+    }
+
+    if locked is not None:
+        payload["locked"] = locked
+
+    if status is not None:
+        payload["status"] = status
+
+    return payload
+
+
+def empty_contract_payload() -> dict:
+    return {
+        "fileName": None,
+        "fileSize": None,
+        "mimeType": None,
+        "hash": None,
+        "uploadedAt": None,
+        "locked": False,
+    }
+
+
+def empty_recording_payload() -> dict:
+    return {
+        "fileName": None,
+        "fileSize": None,
+        "mimeType": None,
+        "hash": None,
+        "durationSec": None,
+        "uploadedAt": None,
+        "status": "idle",
+    }
+
+
+def empty_analysis_payload() -> dict:
+    return {
+        "jobId": None,
+        "status": "idle",
+        "progress": 0,
+        "startedAt": None,
+        "completedAt": None,
+        "error": None,
+    }
+
+
+def empty_report_payload() -> dict:
+    return {
+        "id": None,
+        "hash": None,
+        "riskLevel": None,
+        "summary": None,
+        "mismatches": [],
+        "questions": [],
+        "createdAt": None,
+    }
+
+
+def empty_verification_payload() -> dict:
+    return {
+        "id": None,
+        "status": None,
+        "qrUrl": None,
+        "publicUrl": None,
+        "verifiedAt": None,
+    }
+
+
 def participant_to_dict(participant: ParticipantModel) -> dict:
     return {
         "role": participant.role,
@@ -129,6 +212,71 @@ def session_to_aggregate(db: Session, session: SessionModel) -> dict:
         },
     )
 
+    contract_file = get_latest_file_by_type(
+        db,
+        session_id=session.id,
+        file_type="contract",
+    )
+    recording_file = get_latest_file_by_type(
+        db,
+        session_id=session.id,
+        file_type="recording",
+    )
+    latest_analysis = get_latest_analysis_job_by_session(db, session.id)
+    latest_report = get_latest_report_by_session(db, session.id)
+    latest_verification = get_latest_verification_by_session(db, session.id)
+
+    contract = empty_contract_payload()
+    if contract_file is not None:
+        contract.update(
+            file_record_to_session_file(
+                contract_file,
+                locked=session.status in {
+                    "contract_locked",
+                    "participants_pending",
+                    "participants_ready",
+                    "recording_uploaded",
+                    "analysis_pending",
+                    "analysis_processing",
+                    "analysis_completed",
+                    "report_ready",
+                    "verified",
+                },
+            )
+        )
+
+    recording = empty_recording_payload()
+    if recording_file is not None:
+        recording.update(
+            file_record_to_session_file(
+                recording_file,
+                locked=None,
+                status="uploaded",
+            )
+        )
+        recording["durationSec"] = None
+
+    analysis = empty_analysis_payload()
+    if latest_analysis is not None:
+        analysis.update(analysis_job_to_dict(latest_analysis))
+
+    report = empty_report_payload()
+    if latest_report is not None:
+        report.update(report_to_dict(db, latest_report))
+
+    verification = empty_verification_payload()
+    if latest_verification is not None:
+        verification_dict = verification_to_dict(latest_verification)
+        verification.update(
+            {
+                "id": verification_dict["id"],
+                "status": verification_dict["status"],
+                "qrUrl": f"/verify/{verification_dict['id']}",
+                "publicUrl": f"/verify/{verification_dict['id']}",
+                "verifiedAt": verification_dict["verifiedAt"],
+            }
+        )
+
     return {
         "id": session.id,
         "status": session.status,
@@ -136,50 +284,13 @@ def session_to_aggregate(db: Session, session: SessionModel) -> dict:
         "createdAt": to_iso(session.created_at),
         "updatedAt": to_iso(session.updated_at),
         "expiresAt": to_iso(session.expires_at),
-        "contract": {
-            "fileName": None,
-            "fileSize": None,
-            "mimeType": None,
-            "hash": None,
-            "uploadedAt": None,
-            "locked": False,
-        },
-        "recording": {
-            "fileName": None,
-            "fileSize": None,
-            "mimeType": None,
-            "hash": None,
-            "durationSec": None,
-            "uploadedAt": None,
-            "status": "idle",
-        },
+        "contract": contract,
+        "recording": recording,
         "participants": participants,
-        "analysis": {
-            "jobId": None,
-            "status": "idle",
-            "progress": 0,
-            "startedAt": None,
-            "completedAt": None,
-            "error": None,
-        },
-        "report": {
-            "id": None,
-            "hash": None,
-            "riskLevel": None,
-            "summary": None,
-            "mismatches": [],
-            "questions": [],
-            "createdAt": None,
-        },
-        "verification": {
-            "id": None,
-            "status": None,
-            "qrUrl": None,
-            "publicUrl": None,
-            "verifiedAt": None,
-        },
+        "analysis": analysis,
+        "report": report,
+        "verification": verification,
     }
-
 
 def get_session_aggregate(db: Session, session_id: str) -> Optional[dict]:
     session = get_session(db, session_id)
