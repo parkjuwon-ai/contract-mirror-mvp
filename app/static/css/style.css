@@ -1,3 +1,16 @@
+/*
+ * Contract Mirror MVP CSS entrypoint
+ *
+ * 이 파일은 app/templates/index.html에서 직접 불러오는 현재 CSS 진입점이다.
+ * legacy-ui.css를 기준 스타일로 먼저 불러온 뒤, service-ready MVP 화면에 필요한
+ * 최신 스타일과 덮어쓰기 규칙을 적용한다.
+ *
+ * 정리 원칙:
+ * - 대회/시연 전에는 legacy-ui.css를 바로 제거하지 않는다.
+ * - JavaScript에서 렌더링하는 class 이름은 함부로 변경하지 않는다.
+ * - 삭제보다 화면 단위 회귀 확인과 안전한 override 정리를 우선한다.
+ */
+
 @import url("/static/css/legacy-ui.css?v=v24-recording-processing-polish");
 
 /* =========================================================
