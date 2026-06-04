@@ -49,6 +49,27 @@ def get_session(db: Session, session_id: str) -> Optional[SessionModel]:
     return db.get(SessionModel, session_id)
 
 
+
+
+def update_session_status(
+    db: Session,
+    *,
+    session_id: str,
+    status: str,
+) -> Optional[SessionModel]:
+    session = get_session(db, session_id)
+
+    if session is None:
+        return None
+
+    session.status = status
+    session.updated_at = utc_now()
+
+    db.flush()
+
+    return session
+
+
 def create_default_participants(db: Session, *, session_id: str) -> list[ParticipantModel]:
     participants = [
         ParticipantModel(

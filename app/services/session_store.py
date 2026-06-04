@@ -9,10 +9,12 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from app.db import SessionLocal, init_db
+from app.repositories.file_repository import create_file_record as db_create_file_record
 from app.repositories.session_repository import (
     create_default_participants as db_create_default_participants,
     create_session as db_create_session,
     get_session_aggregate as db_get_session_aggregate,
+    update_session_status as db_update_session_status,
 )
 
 
@@ -89,6 +91,15 @@ def _new_verification_id() -> str:
     return f"VER-{uuid.uuid4().hex[:8].upper()}"
 
 
+def _new_file_id() -> str:
+    return f"FILE-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _storage_path_for(session_id: str, file_name: str) -> str:
+    safe_name = Path(file_name).name or "uploaded_file"
+    return f"storage/uploads/{session_id}/{safe_name}"
+
+
 def _create_db_session(session_id: str, contract_type: str) -> dict | None:
     init_db()
 
@@ -108,6 +119,65 @@ def _create_db_session(session_id: str, contract_type: str) -> dict | None:
 
 def _get_db_session(session_id: str) -> dict | None:
     init_db()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
+def _upload_db_contract(
+    session_id: str,
+    *,
+    file_name: str,
+    file_size: int,
+    mime_type: str | None,
+    file_hash: str,
+) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        current = db_get_session_aggregate(db, session_id)
+        if current is None:
+            return None
+
+        db_create_file_record(
+            db,
+            file_id=_new_file_id(),
+            session_id=session_id,
+            file_type="contract",
+            original_name=file_name,
+            mime_type=mime_type,
+            size_bytes=file_size,
+            sha256_hash=file_hash,
+            storage_path=_storage_path_for(session_id, file_name),
+        )
+        db_update_session_status(
+            db,
+            session_id=session_id,
+            status="contract_uploaded",
+        )
+        db.commit()
+
+    with SessionLocal() as db:
+        return db_get_session_aggregate(db, session_id)
+
+
+def _lock_db_contract(session_id: str) -> dict | None:
+    init_db()
+
+    with SessionLocal() as db:
+        current = db_get_session_aggregate(db, session_id)
+        if current is None:
+            return None
+
+        if not current["contract"]["hash"]:
+            raise ValueError("계약서 업로드 후 고정할 수 있습니다.")
+
+        db_update_session_status(
+            db,
+            session_id=session_id,
+            status="contract_locked",
+        )
+        db.commit()
 
     with SessionLocal() as db:
         return db_get_session_aggregate(db, session_id)
@@ -217,6 +287,33 @@ def upload_contract(
     mime_type: str | None,
     file_hash: str,
 ) -> dict | None:
+    db_session = _upload_db_contract(
+        session_id,
+        file_name=file_name,
+        file_size=file_size,
+        mime_type=mime_type,
+        file_hash=file_hash,
+    )
+
+    if db_session is not None:
+        session = _SESSIONS.get(session_id)
+        if session is not None:
+            session["contract"].update(
+                {
+                    "fileName": file_name,
+                    "fileSize": file_size,
+                    "mimeType": mime_type,
+                    "hash": file_hash,
+                    "uploadedAt": db_session["contract"]["uploadedAt"],
+                    "locked": False,
+                }
+            )
+            session["status"] = "contract_uploaded"
+            session["updatedAt"] = now_iso()
+            _persist_store()
+
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
@@ -237,8 +334,19 @@ def upload_contract(
     _persist_store()
     return _copy(session)
 
-
 def lock_contract(session_id: str) -> dict | None:
+    db_session = _lock_db_contract(session_id)
+
+    if db_session is not None:
+        session = _SESSIONS.get(session_id)
+        if session is not None:
+            session["contract"]["locked"] = True
+            session["status"] = "contract_locked"
+            session["updatedAt"] = now_iso()
+            _persist_store()
+
+        return _copy(db_session)
+
     session = _SESSIONS.get(session_id)
     if not session:
         return None
@@ -252,7 +360,6 @@ def lock_contract(session_id: str) -> dict | None:
     session["updatedAt"] = now
     _persist_store()
     return _copy(session)
-
 
 def update_participant(session_id: str, role: str, patch: dict) -> dict | None:
     session = _SESSIONS.get(session_id)
